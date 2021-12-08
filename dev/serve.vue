@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import MapViewer from "@/lib-components/MapViewer.vue";
+import MapViewer from "@/components/MapViewer.vue";
 
 export default Vue.extend({
   name: 'ServeDev',
