@@ -13,7 +13,6 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "prepare": "npm run build",
     "serve": "vue-cli-service serve dev/serve.ts",
     "prebuild": "rimraf ./dist && webpack --config decoders/harp-gl-decoder.config.js",
     "build": "cross-env NODE_ENV=production rollup --config build/rollup.config.js",
