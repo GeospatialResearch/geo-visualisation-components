@@ -9,7 +9,7 @@
   "types": "dist/types/src/entry.esm.d.ts",
   "files": [
     "dist/*",
-    "src/**/*.vue"
+    "src/*"
   ],
   "sideEffects": false,
   "scripts": {
