@@ -1,6 +1,6 @@
 {
   "name": "geo-visualisation-components",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "dist/geo-visualisation-components.ssr.js",
   "browser": "dist/geo-visualisation-components.esm.js",
