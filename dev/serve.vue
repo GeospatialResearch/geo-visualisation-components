@@ -3,8 +3,7 @@
     <MapViewer
         :init-lat="-43.523392915353384"
         :init-long="172.58414599255107"
-        :token="hereApiToken"
-        class="full-screen-map"
+        :cesium-access-token="cesiumAccessToken"
     />
   </div>
 </template>
@@ -20,7 +19,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      hereApiToken: process.env.VUE_APP_HEREAPI,
+      cesiumAccessToken: process.env.VUE_APP_CESIUM_ACCESS_TOKEN,
     }
   }
 });

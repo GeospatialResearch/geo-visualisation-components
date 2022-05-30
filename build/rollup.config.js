@@ -4,6 +4,7 @@ import path from 'path';
 import vue from 'rollup-plugin-vue';
 import alias from '@rollup/plugin-alias';
 import commonjs from '@rollup/plugin-commonjs';
+import copy from 'rollup-plugin-copy';
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import babel from '@rollup/plugin-babel';
@@ -53,6 +54,15 @@ const baseConfig = {
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
       }),
       commonjs(),
+      copy({
+        targets: [
+          {src: './node_modules/cesium/Build/Cesium/Assets', dest: 'public/build/'},
+          {src: './node_modules/cesium/Build/Cesium/ThirdParty', dest: 'public/build/'},
+          {src: './node_modules/cesium/Build/Cesium/Widgets', dest: 'public/build/'},
+          {src: './node_modules/cesium/Build/Cesium/Workers', dest: 'public/build/'},
+        ],
+        verbose: true
+      }),
     ],
     babel: {
       exclude: 'node_modules/**',

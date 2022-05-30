@@ -1,6 +1,6 @@
 {
   "name": "geo-visualisation-components",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "dist/geo-visualisation-components.ssr.js",
   "browser": "dist/geo-visualisation-components.esm.js",
@@ -14,7 +14,7 @@
   "sideEffects": false,
   "scripts": {
     "serve": "vue-cli-service serve dev/serve.ts",
-    "prebuild": "rimraf ./dist && webpack --config decoders/harp-gl-decoder.config.js",
+    "prebuild": "rimraf ./dist",
     "build": "cross-env NODE_ENV=production rollup --config build/rollup.config.js",
     "build:ssr": "cross-env NODE_ENV=production rollup --config build/rollup.config.js --format cjs",
     "build:es": "cross-env NODE_ENV=production rollup --config build/rollup.config.js --format es",
@@ -23,13 +23,7 @@
     "lint": "eslint src dev build ./*.ts ./*.js --ext .js,.ts,.vue"
   },
   "dependencies": {
-    "@here/harp-geoutils": "^0.27.1",
-    "@here/harp-map-controls": "^0.27.1",
-    "@here/harp-map-theme": "^0.27.1",
-    "@here/harp-mapview": "^0.27.1",
-    "@here/harp-omv-datasource": "^0.27.1",
-    "@here/harp-vectortile-datasource": "^0.27.1",
-    "three": "^0.129.0"
+    "cesium": "^1.91.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",
@@ -40,8 +34,7 @@
     "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-replace": "^2.4.2",
-    "@types/offscreencanvas": "^2019.6.4",
-    "@types/three": "^0.129.0",
+    "@types/cesium": "^1.70.0",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
     "@vue/cli-plugin-babel": "^4.5.13",
@@ -55,6 +48,7 @@
     "minimist": "^1.2.5",
     "rimraf": "^3.0.2",
     "rollup": "^2.52.8",
+    "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-vue": "^5.1.9",
