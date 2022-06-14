@@ -8,11 +8,13 @@
 import Vue from "vue";
 import * as Cesium from "cesium";
 
+// Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
   interface Window {
     CESIUM_BASE_URL: string | null
   }
 }
+// The public served directory for Cesium to find assets in, copied in during the build process
 window.CESIUM_BASE_URL = "./build";
 
 export default Vue.extend({
