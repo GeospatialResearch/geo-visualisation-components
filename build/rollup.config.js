@@ -56,10 +56,10 @@ const baseConfig = {
       commonjs(),
       copy({
         targets: [
-          {src: './node_modules/cesium/Build/Cesium/Assets', dest: 'public/build/'},
-          {src: './node_modules/cesium/Build/Cesium/ThirdParty', dest: 'public/build/'},
-          {src: './node_modules/cesium/Build/Cesium/Widgets', dest: 'public/build/'},
-          {src: './node_modules/cesium/Build/Cesium/Workers', dest: 'public/build/'},
+          {src: './node_modules/cesium/Build/Cesium/Assets', dest: 'public/'},
+          {src: './node_modules/cesium/Build/Cesium/ThirdParty', dest: 'public/'},
+          {src: './node_modules/cesium/Build/Cesium/Widgets', dest: 'public/'},
+          {src: './node_modules/cesium/Build/Cesium/Workers', dest: 'public/'},
         ],
         verbose: true
       }),

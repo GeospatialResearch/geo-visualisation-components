@@ -62,5 +62,5 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-@import url(/build/Widgets/widgets.css);
+@import url(/Widgets/widgets.css);
 </style>
