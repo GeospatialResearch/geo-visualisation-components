@@ -1,4 +1,5 @@
 <template>
+  <!--  Example app for library development-->
   <div id="app">
     <MapViewer
         :init-lat="-43.523392915353384"
