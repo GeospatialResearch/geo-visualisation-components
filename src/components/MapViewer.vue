@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="cesiumContainer" class="fullSize" />
+    <div id="mapContainer" class="fullSize" />
   </div>
 </template>
 
@@ -52,7 +52,7 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.viewer = new Cesium.Viewer("cesiumContainer");
+    this.viewer = new Cesium.Viewer("mapContainer");
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat);
     this.viewer.camera.flyTo({destination: initPos});
