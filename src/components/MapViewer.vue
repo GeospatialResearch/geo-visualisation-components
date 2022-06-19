@@ -1,4 +1,5 @@
 <template>
+  <!-- Renders map inside container -->
   <div>
     <div id="mapContainer" class="fullSize" />
   </div>
