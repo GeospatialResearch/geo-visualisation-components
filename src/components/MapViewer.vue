@@ -8,6 +8,7 @@
 <script lang="ts">
 import Vue from "vue";
 import * as Cesium from "cesium";
+import 'cesium/Source/Widgets/widgets.css'
 
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
@@ -63,5 +64,4 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-@import url(/Widgets/widgets.css);
 </style>
