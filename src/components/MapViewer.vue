@@ -16,7 +16,7 @@ declare global {
   }
 }
 // The public served directory for Cesium to find assets in, copied in during the build process
-window.CESIUM_BASE_URL = "./build";
+window.CESIUM_BASE_URL = "./";
 
 export default Vue.extend({
   name: "MapViewer",
