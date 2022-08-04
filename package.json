@@ -19,7 +19,7 @@
   "homepage": "https://github.com/GeospatialResearch/geo-visualisation-components",
   "bugs": "https://github.com/GeospatialResearch/geo-visualisation-components/issues",
   "author": "Luke Parkinson (https://github.com/LukeParky)",
-  "main": "dist/geo-visualisation-components.ssr.js",
+  "main": "src",
   "browser": "dist/geo-visualisation-components.esm.js",
   "module": "dist/geo-visualisation-components.esm.js",
   "unpkg": "dist/geo-visualisation-components.min.js",
