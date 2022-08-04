@@ -66,6 +66,7 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.52.8",
     "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-import-css": "^3.0.3",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-vue": "^5.1.9",
