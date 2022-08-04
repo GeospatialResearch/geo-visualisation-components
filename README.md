@@ -1,6 +1,6 @@
 # Geo Visualisation Components
 
-Geo Visualisation Components is a web-visualisation library for geospatial data. In early development by Geospatial Research Institute Toi Hanagarau and written in TypeScript.
+Geo Visualisation Components is an experimental web-visualisation library for geospatial data. In early development by Geospatial Research Institute Toi Hanagarau and written in TypeScript.
 
 
 
