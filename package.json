@@ -1,6 +1,6 @@
 {
   "name": "geo-visualisation-components",
-  "version": "0.0.3-7",
+  "version": "0.0.3-8",
   "license": "MIT",
   "description": "Geo-visualisation-components is a component library for geospatial visualisations. It is written in TypeScript using Vue 2.",
   "keywords": [
