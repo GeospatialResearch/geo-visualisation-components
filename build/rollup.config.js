@@ -5,6 +5,7 @@ import vue from 'rollup-plugin-vue';
 import alias from '@rollup/plugin-alias';
 import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
+import css from 'rollup-plugin-import-css';
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import babel from '@rollup/plugin-babel';
@@ -31,6 +32,7 @@ const baseConfig = {
   input: 'src/entry.ts',
   plugins: {
     preVue: [
+      css(),
       alias({
         entries: [
           {
