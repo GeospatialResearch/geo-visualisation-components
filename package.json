@@ -26,7 +26,7 @@
   "types": "dist/types/src/entry.esm.d.ts",
   "files": [
     "dist/*",
-    "src/*"
+    "src"
   ],
   "sideEffects": false,
   "scripts": {
