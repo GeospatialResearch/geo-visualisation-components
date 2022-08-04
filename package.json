@@ -1,9 +1,20 @@
 {
   "name": "geo-visualisation-components",
-  "version": "0.0.3-3",
+  "version": "0.0.3-4",
   "license": "MIT",
   "description": "Geo-visualisation-components is a component library for geospatial visualisations. It is written in TypeScript using Vue 2.",
-  "keywords": ["geospatial", "map", "3d", "GIS", "geojson", "web", "vue", "typescript", "ts", "component"],
+  "keywords": [
+    "geospatial",
+    "map",
+    "3d",
+    "GIS",
+    "geojson",
+    "web",
+    "vue",
+    "typescript",
+    "ts",
+    "component"
+  ],
   "repository": "github:GeospatialResearch/geovisualisation-components",
   "homepage": "https://github.com/GeospatialResearch/geo-visualisation-components",
   "bugs": "https://github.com/GeospatialResearch/geo-visualisation-components/issues",
