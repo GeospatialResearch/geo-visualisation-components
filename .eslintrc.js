@@ -10,4 +10,9 @@ module.exports = {
     "@vue/typescript/recommended",
   ],
   plugins: ["@typescript-eslint"],
+  rules: {
+    "vue/html-indent": ["error", 2, {
+      "attribute": 2,
+    }]
+  }
 }
