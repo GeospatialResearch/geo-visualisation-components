@@ -16,6 +16,11 @@ module.exports = {
   rules: {
     "vue/html-indent": ["error", 2, {
       "attribute": 2,
+    }],
+    "vue/max-attributes-per-line": ["error", {
+      "singleline": 6,
+      "multiline": 1
     }]
+
   }
 }
