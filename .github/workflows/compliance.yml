@@ -16,7 +16,7 @@ jobs:
         run: |
           newVersion=$(npm view . version)
           mainVersion=$(npm view github:GeospatialResearch/geo-visualisation-components version)
-          build/check-version.py $newVersion $mainVersion
+          python build/check-version.py $newVersion $mainVersion
 
   lint:
     name: Lint
