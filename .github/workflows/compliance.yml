@@ -3,6 +3,21 @@ on:
   pull_request:
 
 jobs:
+  check-version:
+    name: Check if version needs to be updated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x.x
+      - uses: actions/checkout@v3
+
+      - name: Check version has been updated and meets requirements
+        run: |
+          newVersion=$(npm view . version)
+          mainVersion=$(npm view github:GeospatialResearch/geo-visualisation-components version)
+          build/check-version.py $newVersion $mainVersion
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
