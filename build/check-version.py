@@ -8,12 +8,12 @@ class SemVer:
     def __init__(self, version_str: str):
         try:
             major, minor, patch = version_str.split(".", 3)
-        except ValueError:
-            raise ValueError(f"MAJOR.MINOR.PATCH format expected, received {version_str}")
 
-        self.major = int(major)
-        self.minor = int(minor)
-        self.patch = int(patch)
+            self.major = int(major)
+            self.minor = int(minor)
+            self.patch = int(patch)
+        except ValueError as e:
+            raise ValueError(f"Integers in form MAJOR.MINOR.PATCH format expected, received {version_str}") from e
 
     def __eq__(self, other: "SemVer"):
         return self.major == other.major and \
