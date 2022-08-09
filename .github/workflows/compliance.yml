@@ -14,7 +14,7 @@ jobs:
 
       - name: Check version has been updated and meets requirements
         run: |
-          newVersion=$(npm view . version)
+          newVersion=$(npm pkg get version)
           mainVersion=$(npm view github:GeospatialResearch/geo-visualisation-components version)
           python build/check-version.py $newVersion $mainVersion
 
