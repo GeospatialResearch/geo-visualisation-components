@@ -46,8 +46,8 @@ if __name__ == '__main__':
     parser.add_argument('current_version', type=str, help=f"The previous latest release. {format_help_spec}")
     args = parser.parse_args()
 
-    new_version = SemVer(args.new_version)
-    current_version = SemVer(args.current_version)
+    new_version = SemVer(args.new_version.strip('"'))
+    current_version = SemVer(args.current_version.strip('"'))
 
     if new_version > current_version:
         print(f"Success: {new_version} > {current_version}")
