@@ -2,6 +2,8 @@
 
 Geo Visualisation Components is an experimental web-visualisation library for geospatial data. In early development by Geospatial Research Institute Toi Hanagarau and written in TypeScript.
 
+The library is not yet fully featured and is not ready for production use.
+
 
 
 ## Getting Started
@@ -15,11 +17,10 @@ Geo Visualisation Components is an experimental web-visualisation library for ge
 
 ### Installing the library into an existing Vue project
 
-See [Digital Twins](https://github.com/GeospatialResearch/Digital-Twins/tree/master/visualisation) for an example of a Vue app using this library.
+See [Digital Twins](https://github.com/GeospatialResearch/Digital-Twins/tree/21-integrate-visualisation-library/visualisation) for an example of a Vue app using this library.
 
-1. Install geo-visualisation-components directly from release:  
-   `npm install --save https://github.com/GeospatialResearch/geo-visualisation-components/releases/download/v0.0.3.alpha.1/geo-visualisation-components-0.0.3.tgz`  
-    _Note: This is temporary until we release on NPM._
+1. Install geo-visualisation-components:  
+   `npm install geo-visualisation-components`
    
 5. Configure WebPack to copy Cesium assets into the public served folder. 
    See [Digital Twins/visualisation/vue.config.js](https://github.com/GeospatialResearch/Digital-Twins/blob/21-integrate-visualisation-library/visualisation/vue.config.js) for an example of this.  
