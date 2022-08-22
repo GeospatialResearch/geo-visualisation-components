@@ -2,9 +2,9 @@
   <!--  Example app for library development-->
   <div id="app">
     <MapViewer
+        :cesium-access-token="cesiumAccessToken"
         :init-lat="-43.523392915353384"
         :init-long="172.58414599255107"
-        :cesium-access-token="cesiumAccessToken"
     />
   </div>
 </template>
