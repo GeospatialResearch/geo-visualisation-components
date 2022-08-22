@@ -24,7 +24,7 @@ class SemVer:
         return self != other and \
                self.major <= other.major and \
                self.minor <= other.minor and \
-               self.patch <= other.patch
+               self.patch < other.patch
 
     def __repr__(self):
         return f"SemVer('{self.major}.{self.minor}.{self.patch}')"
