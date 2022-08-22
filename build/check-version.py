@@ -27,7 +27,7 @@ class SemVer:
                self.patch <= other.patch
 
     def __repr__(self):
-        return f"SemVer('{self.major}.{self.minor}.{self.patch}"
+        return f"SemVer('{self.major}.{self.minor}.{self.patch}')"
 
     def __str__(self):
         return f"{self.major}.{self.minor}.{self.patch}"
