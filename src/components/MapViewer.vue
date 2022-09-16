@@ -6,9 +6,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue, {PropType} from "vue";
 import * as Cesium from "cesium";
 import 'cesium/Source/Widgets/widgets.css'
+import {MapViewerDataSourceOptions} from "@/types";
 
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
@@ -18,6 +19,7 @@ declare global {
 }
 // The public served directory for Cesium to find assets in, copied in during the build process
 window.CESIUM_BASE_URL = "./";
+
 
 export default Vue.extend({
   name: "MapViewer",
@@ -44,7 +46,8 @@ export default Vue.extend({
     cesiumAccessToken: {
       type: String,
       required: true
-    }
+    },
+    dataSources: Object as PropType<MapViewerDataSourceOptions>,
   },
 
   data() {
@@ -56,6 +59,7 @@ export default Vue.extend({
 
   created() {
     Cesium.Ion.defaultAccessToken = this.cesiumAccessToken;
+    this.addDataSourcesProp();
   },
 
   mounted() {
@@ -63,6 +67,25 @@ export default Vue.extend({
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
+    this.addDataSourcesProp();
+  },
+
+  methods: {
+    addDataSourcesProp() {
+      const ionAssetIds: number[] = this.dataSources?.ionAssetIds ?? []
+      const providersFromAssets: Cesium.IonImageryProvider[] = ionAssetIds.map((assetId: number) =>
+          new Cesium.IonImageryProvider({assetId}));
+      // Combine providersFromAssets and ionImageryProviders, accounting for undefined options
+      const combinedProviders = providersFromAssets.concat(this.dataSources?.ionImageryProviders ?? [])
+
+      // Add data sources to viewer, accounting for undefined options
+      combinedProviders.forEach(provider => {
+        this.viewer?.imageryLayers.addImageryProvider(provider);
+      });
+      this.dataSources?.geoJsonDataSources?.forEach(geoJson => {
+        this.viewer?.dataSources.add(geoJson);
+      });
+    }
   }
 
 });
