@@ -37,17 +37,19 @@ export default Vue.extend({
       required: true,
       validator: (value: number) => -180 <= value && value <= 180,
     },
-    /** Initial height of the camera in metres. Default is 2000m */
-    initHeight: {
-      type: Number,
-      default: 2000,
-    },
     /** Cesium.Ion.defaultAccessToken value. See: https://cesium.com/learn/ion/cesium-ion-access-tokens/ */
     cesiumAccessToken: {
       type: String,
       required: true
     },
-    dataSources: Object as PropType<MapViewerDataSourceOptions>,
+    /** Initial height of the camera in metres. Default is 2000m */
+    initHeight: {
+      type: Number,
+      default: 2000,
+    },
+    dataSources: {
+      type: Object as PropType<MapViewerDataSourceOptions>
+    },
   },
 
   data() {
@@ -67,7 +69,12 @@ export default Vue.extend({
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
-    this.addDataSourcesProp();
+  },
+
+  watch: {
+    dataSources() {
+      this.addDataSourcesProp();
+    },
   },
 
   methods: {
