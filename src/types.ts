@@ -8,3 +8,7 @@ export interface MapViewerDataSourceOptions {
   // External data source assets
   geoJsonDataSources?: Cesium.GeoJsonDataSource[]
 }
+
+export interface Scenario extends MapViewerDataSourceOptions {
+  name: string
+}

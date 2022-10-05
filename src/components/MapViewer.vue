@@ -9,7 +9,7 @@
 import Vue, {PropType} from "vue";
 import * as Cesium from "cesium";
 import 'cesium/Source/Widgets/widgets.css'
-import {MapViewerDataSourceOptions} from "@/types";
+import {MapViewerDataSourceOptions, Scenario} from "@/types";
 
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
@@ -50,6 +50,10 @@ export default Vue.extend({
     dataSources: {
       type: Object as PropType<MapViewerDataSourceOptions>
     },
+    scenarios: {
+      type: Array as () => Array<Scenario>
+    },
+    pickedScenarioName: String,
   },
 
   data() {
@@ -61,7 +65,7 @@ export default Vue.extend({
 
   created() {
     Cesium.Ion.defaultAccessToken = this.cesiumAccessToken;
-    this.addDataSourcesProp();
+    // this.addDataSourcesProp();
   },
 
   mounted() {
@@ -72,26 +76,41 @@ export default Vue.extend({
   },
 
   watch: {
-    dataSources() {
-      this.addDataSourcesProp();
+    dataSources(dataSources) {
+      this.addDataSourcesProp(dataSources);
     },
+    pickedScenario(newScenario, oldScenario) {
+      this.removeDataSources(oldScenario);
+      this.addDataSourcesProp(newScenario)
+    }
+  },
+
+  computed: {
+    pickedScenario(): Scenario {
+      return this.scenarios.find(scenario => scenario.name === this.pickedScenarioName) ?? this.scenarios[0];
+    }
   },
 
   methods: {
-    addDataSourcesProp() {
-      const ionAssetIds: number[] = this.dataSources?.ionAssetIds ?? []
+    addDataSourcesProp(dataSource: MapViewerDataSourceOptions) {
+      const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
       const providersFromAssets: Cesium.IonImageryProvider[] = ionAssetIds.map((assetId: number) =>
           new Cesium.IonImageryProvider({assetId}));
       // Combine providersFromAssets and ionImageryProviders, accounting for undefined options
-      const combinedProviders = providersFromAssets.concat(this.dataSources?.ionImageryProviders ?? [])
+      const combinedProviders = providersFromAssets.concat(dataSource?.ionImageryProviders ?? [])
 
       // Add data sources to viewer, accounting for undefined options
       combinedProviders.forEach(provider => {
         this.viewer?.imageryLayers.addImageryProvider(provider);
       });
-      this.dataSources?.geoJsonDataSources?.forEach(geoJson => {
+      dataSource?.geoJsonDataSources?.forEach(geoJson => {
         this.viewer?.dataSources.add(geoJson);
       });
+    },
+
+    removeDataSources(dataSource: MapViewerDataSourceOptions) {
+      console.log('Remove ds');
+      console.log(dataSource)
     }
   }
 
