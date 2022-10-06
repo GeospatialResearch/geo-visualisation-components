@@ -1,7 +1,9 @@
 <template>
   <!-- Renders map inside container -->
   <div>
-    <div id="mapContainer" class="fullSize" />
+    <div id="mapContainer" ref="mapContainer" class="fullSize">
+      <div id="slider" ref="slider" />
+    </div>
   </div>
 </template>
 
@@ -53,7 +55,6 @@ export default Vue.extend({
     scenarios: {
       type: Array as () => Array<Scenario>
     },
-    pickedScenarioName: String,
   },
 
   data() {
@@ -65,11 +66,11 @@ export default Vue.extend({
 
   created() {
     Cesium.Ion.defaultAccessToken = this.cesiumAccessToken;
-    // this.addDataSourcesProp();
   },
 
   mounted() {
     this.viewer = new Cesium.Viewer("mapContainer");
+    this.initSlider();
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
@@ -79,38 +80,69 @@ export default Vue.extend({
     dataSources(dataSources) {
       this.addDataSourcesProp(dataSources);
     },
-    pickedScenario(newScenario, oldScenario) {
-      this.removeDataSources(oldScenario);
-      this.addDataSourcesProp(newScenario)
-    }
-  },
-
-  computed: {
-    pickedScenario(): Scenario {
-      return this.scenarios.find(scenario => scenario.name === this.pickedScenarioName) ?? this.scenarios[0];
+    scenarios(scenarios) {
+      this.addDataSourcesProp(scenarios[0], Cesium.SplitDirection.LEFT);
+      this.addDataSourcesProp(scenarios[1], Cesium.SplitDirection.RIGHT);
     }
   },
 
   methods: {
-    addDataSourcesProp(dataSource: MapViewerDataSourceOptions) {
+    initSlider() {
+      const slider = this.$refs.slider as HTMLDivElement;
+      const mapContainer = this.$refs.mapContainer as HTMLDivElement;
+      if (this.viewer != null) {
+        this.viewer.scene.splitPosition = (slider.offsetLeft ?? 0) / (mapContainer.offsetWidth ?? 1);
+      }
+
+      const handler = new Cesium.ScreenSpaceEventHandler(slider as unknown as HTMLCanvasElement);
+      let moveActive = false;
+
+      const move = (movement: Cesium.ScreenSpaceEventHandler.MotionEvent) => {
+        if (!moveActive) {
+          return;
+        }
+
+        const relativeOffset = movement.endPosition.x;
+        const splitPosition = ((slider.offsetLeft ?? 0) + relativeOffset) / (mapContainer.offsetWidth ?? 1);
+        slider.style.left = `${100.0 * splitPosition}%`;
+        if (this.viewer != null)
+          this.viewer.scene.splitPosition = splitPosition;
+      }
+
+      handler.setInputAction(() => {
+        moveActive = true;
+      }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+      handler.setInputAction(function () {
+        moveActive = true;
+      }, Cesium.ScreenSpaceEventType.PINCH_START);
+
+      handler.setInputAction(move, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+      handler.setInputAction(move, Cesium.ScreenSpaceEventType.PINCH_MOVE);
+
+      handler.setInputAction(function () {
+        moveActive = false;
+      }, Cesium.ScreenSpaceEventType.LEFT_UP);
+      handler.setInputAction(function () {
+        moveActive = false;
+      }, Cesium.ScreenSpaceEventType.PINCH_END);
+    },
+
+    addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
       const providersFromAssets: Cesium.IonImageryProvider[] = ionAssetIds.map((assetId: number) =>
-          new Cesium.IonImageryProvider({assetId}));
+        new Cesium.IonImageryProvider({assetId}));
       // Combine providersFromAssets and ionImageryProviders, accounting for undefined options
       const combinedProviders = providersFromAssets.concat(dataSource?.ionImageryProviders ?? [])
 
       // Add data sources to viewer, accounting for undefined options
       combinedProviders.forEach(provider => {
-        this.viewer?.imageryLayers.addImageryProvider(provider);
+        const layer = this.viewer?.imageryLayers.addImageryProvider(provider);
+        if (splitDirection != null && layer != null)
+          layer.splitDirection = splitDirection;
       });
       dataSource?.geoJsonDataSources?.forEach(geoJson => {
         this.viewer?.dataSources.add(geoJson);
       });
-    },
-
-    removeDataSources(dataSource: MapViewerDataSourceOptions) {
-      console.log('Remove ds');
-      console.log(dataSource)
     }
   }
 
@@ -118,4 +150,17 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+#slider {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  background-color: #d3d3d3;
+  width: 5px;
+  height: 100%;
+  z-index: 9999;
+}
+
+#slider:hover {
+  cursor: ew-resize;
+}
 </style>
