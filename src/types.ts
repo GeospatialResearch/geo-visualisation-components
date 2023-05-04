@@ -2,8 +2,9 @@ import * as Cesium from "cesium";
 
 export interface MapViewerDataSourceOptions {
   // Cesium Ion assets
-  ionImageryProviders?: Cesium.IonImageryProvider[]
   ionAssetIds?: number[]
+
+  imageryProviders?: Cesium.ImageryProvider[]
 
   // External data source assets
   geoJsonDataSources?: Cesium.GeoJsonDataSource[]
