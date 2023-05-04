@@ -50,10 +50,16 @@ export default Vue.extend({
       default: 2000,
     },
     dataSources: {
-      type: Object as PropType<MapViewerDataSourceOptions>
+      type: Object as PropType<MapViewerDataSourceOptions>,
+      default() {
+        return {}
+      }
     },
     scenarios: {
-      type: Array as () => Array<Scenario>
+      type: Array as () => Array<Scenario>,
+      default() {
+        return []
+      }
     },
   },
 
@@ -129,10 +135,10 @@ export default Vue.extend({
 
     addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
-      const providersFromAssets: Cesium.IonImageryProvider[] = ionAssetIds.map((assetId: number) =>
-        new Cesium.IonImageryProvider({assetId}));
-      // Combine providersFromAssets and ionImageryProviders, accounting for undefined options
-      const combinedProviders = providersFromAssets.concat(dataSource?.ionImageryProviders ?? [])
+      const providersFromAssets: Cesium.ImageryProvider[] = ionAssetIds.map((assetId: number) =>
+          new Cesium.IonImageryProvider({assetId}));
+      // Combine providersFromAssets and imageryProviders, accounting for undefined options
+      const combinedProviders = providersFromAssets.concat(dataSource?.imageryProviders ?? [])
 
       // Add data sources to viewer, accounting for undefined options
       combinedProviders.forEach(provider => {
@@ -143,7 +149,7 @@ export default Vue.extend({
       dataSource?.geoJsonDataSources?.forEach(geoJson => {
         this.viewer?.dataSources.add(geoJson);
       });
-    }
+    },
   }
 
 });
