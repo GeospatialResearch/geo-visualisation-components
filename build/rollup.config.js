@@ -7,6 +7,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
 import css from 'rollup-plugin-import-css';
 import resolve from '@rollup/plugin-node-resolve';
+import json from "@rollup/plugin-json"
 import replace from '@rollup/plugin-replace';
 import babel from '@rollup/plugin-babel';
 import {terser} from 'rollup-plugin-terser';
@@ -56,6 +57,7 @@ const baseConfig = {
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
       }),
       commonjs(),
+      json(),
       copy({
         targets: [
           {src: './node_modules/cesium/Build/Cesium/Assets', dest: 'public/'},
