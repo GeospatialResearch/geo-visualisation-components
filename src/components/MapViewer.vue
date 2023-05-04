@@ -1,8 +1,8 @@
 <template>
   <!-- Renders map inside container -->
   <div>
-    <div id="mapContainer" ref="mapContainer" class="fullSize">
-      <div id="slider" ref="slider" />
+    <div id="mapContainer" ref="mapContainer">
+      <div v-if="scenarios.length >= 2" id="slider" ref="slider" />
     </div>
   </div>
 </template>
