@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "noImplicitAny": false, // Temp for now TODO
+    "allowJs": true, // temp for now
     "target": "esnext",
     "module": "esnext",
     "strict": true,

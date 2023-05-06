@@ -4,14 +4,29 @@
     <div id="mapContainer" ref="mapContainer">
       <div v-if="scenarios.length >= 2" id="slider" ref="slider" />
     </div>
+    <b-card v-if="loading" class="loading-dialog">
+      <LoadingSpinner />
+      <h2>Generating model</h2>
+      <b-btn variant="danger" @click="cancelTask">Cancel</b-btn>
+    </b-card>
+    <div v-else>
+      <Plotly id="depthPlot" v-if="plotData" :data="plotData"/>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
+// @ts-nocheck
+//todo
 import Vue, {PropType} from "vue";
 import * as Cesium from "cesium";
 import 'cesium/Source/Widgets/widgets.css'
 import {MapViewerDataSourceOptions, Scenario} from "@/types";
+import axios from "axios";
+import {Plotly} from "vue-plotly";
+import LoadingSpinner from "./LoadingSpinner.vue";
+
+console.log("V0.0.5")
 
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
@@ -25,6 +40,11 @@ window.CESIUM_BASE_URL = "./";
 
 export default Vue.extend({
   name: "MapViewer",
+
+  components: {
+    LoadingSpinner,
+    Plotly,
+  },
 
   props: {
     /** Initial latitude for map view */
@@ -51,15 +71,11 @@ export default Vue.extend({
     },
     dataSources: {
       type: Object as PropType<MapViewerDataSourceOptions>,
-      default() {
-        return {}
-      }
+      default() { return {} }
     },
     scenarios: {
       type: Array as () => Array<Scenario>,
-      default() {
-        return []
-      }
+      default() { return [] }
     },
   },
 
@@ -67,6 +83,20 @@ export default Vue.extend({
     return {
       /** Cesium viewer and map renderer */
       viewer: null as Cesium.Viewer | null,
+      loading: false,
+      handler: null as Cesium.ScreenSpaceEventHandler | null,
+      plotData: null as any, //todo
+      plotRenderEvt: () => {},
+      scratch: new Cesium.Cartesian2(),
+      boxSelection: {
+        selector: new Cesium.Entity(),
+        firstPoint: new Cesium.Cartographic(),
+        firstPointSet: false,
+        mouseDown: false,
+        rectangleSelector: new Cesium.Rectangle()
+      },
+      taskId: null as string | null,
+      showRaster: false,
     }
   },
 
@@ -76,7 +106,12 @@ export default Vue.extend({
 
   mounted() {
     this.viewer = new Cesium.Viewer("mapContainer");
-    this.initSlider();
+    this.setScreenSpaceEvents();
+    // this.initSlider();
+
+    if (!this.viewer.scene.pickPositionSupported) {
+      alert("This browser does not support pickPosition.")
+    }
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
@@ -84,15 +119,167 @@ export default Vue.extend({
 
   watch: {
     dataSources(dataSources) {
-      this.addDataSourcesProp(dataSources);
+      if (this.showRaster) {
+        console.log("1");
+        this.addDataSourcesProp(dataSources);
+      }
     },
     scenarios(scenarios) {
-      this.addDataSourcesProp(scenarios[0], Cesium.SplitDirection.LEFT);
-      this.addDataSourcesProp(scenarios[1], Cesium.SplitDirection.RIGHT);
-    }
+      // if (this.showRaster) {
+      //   console.log("2");
+      this.addDataSourcesProp(scenarios[0]);
+      console.log(scenarios[0])
+      // this.addDataSourcesProp(scenarios[0], Cesium.SplitDirection.LEFT);
+        // this.addDataSourcesProp(scenarios[1], Cesium.SplitDirection.RIGHT);
+      // }
+    },
+    showRaster(showRaster) {
+      if (showRaster) {
+        console.log("3");
+        this.addDataSourcesProp(this.dataSources)
+        this.addDataSourcesProp(this.scenarios[0], Cesium.SplitDirection.LEFT)
+        // this.addDataSourcesProp(this.scenarios[1], Cesium.SplitDirection.RIGHT)
+      } else {
+        this.removeDataSources()
+      }
+    },
   },
 
   methods: {
+    setScreenSpaceEvents() {
+      if (this.viewer)
+        this.viewer.scene.screenSpaceCameraController.enableLook = false
+
+      this.handler = new Cesium.ScreenSpaceEventHandler(this.viewer?.canvas);
+
+      //Draw the selector while the user drags the mouse while holding shift
+      const drawSelector = (movement: Cesium.ScreenSpaceEventHandler.MotionEvent) => {
+        if (!this.boxSelection.mouseDown) {
+          return;
+        }
+
+        const cartesian = this.viewer?.camera.pickEllipsoid(movement.endPosition, this.viewer.scene.globe.ellipsoid);
+        if (cartesian) {
+          //mouse cartographic
+          const cartographic = Cesium.Cartographic.fromCartesian(cartesian, Cesium.Ellipsoid.WGS84);
+
+          if (!this.boxSelection.firstPointSet) {
+            this.boxSelection.firstPoint = Cesium.Cartographic.clone(cartographic);
+            this.boxSelection.firstPointSet = true;
+          } else {
+            this.boxSelection.rectangleSelector.east = Math.max(cartographic.longitude, this.boxSelection.firstPoint.longitude);
+            this.boxSelection.rectangleSelector.west = Math.min(cartographic.longitude, this.boxSelection.firstPoint.longitude);
+            this.boxSelection.rectangleSelector.north = Math.max(cartographic.latitude, this.boxSelection.firstPoint.latitude);
+            this.boxSelection.rectangleSelector.south = Math.min(cartographic.latitude, this.boxSelection.firstPoint.latitude);
+            this.boxSelection.selector.show = true;
+          }
+        }
+      };
+      this.handler.setInputAction(drawSelector, Cesium.ScreenSpaceEventType.MOUSE_MOVE, Cesium.KeyboardEventModifier.SHIFT);
+
+      const getSelectorLocation = new Cesium.CallbackProperty((_time, result) => {
+          return Cesium.Rectangle.clone(this.boxSelection.rectangleSelector, result);
+        }, false);
+
+      const startClickShift = () => {
+        this.boxSelection.mouseDown = true;
+        if (this.boxSelection.selector.rectangle)
+          this.boxSelection.selector.rectangle.coordinates = getSelectorLocation;
+      };
+      this.handler.setInputAction(startClickShift, Cesium.ScreenSpaceEventType.LEFT_DOWN, Cesium.KeyboardEventModifier.SHIFT);
+
+      const endClickShift = () => {
+        this.boxSelection.mouseDown = false;
+        this.boxSelection.firstPointSet = false;
+        if (this.boxSelection.selector.rectangle)
+          this.boxSelection.selector.rectangle.coordinates = getSelectorLocation;
+        this.requestFloodData()
+      };
+      this.handler.setInputAction(endClickShift, Cesium.ScreenSpaceEventType.LEFT_UP, Cesium.KeyboardEventModifier.SHIFT);
+
+      this.boxSelection.selector = this.viewer?.entities.add({
+        show: false,
+        rectangle: {
+          coordinates: getSelectorLocation,
+          material: Cesium.Color.BLACK.withAlpha(0.5)
+        }
+      }) as Cesium.Entity;
+
+      this.handler.setInputAction((event) => {
+        const worldPosCartesian = this.viewer?.camera.pickEllipsoid(event.position);
+        if (worldPosCartesian) {
+          const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(worldPosCartesian)
+          const lat = Cesium.Math.toDegrees(cartographic.latitude);
+          const lng = Cesium.Math.toDegrees(cartographic.longitude);
+          this.queryPoint(lat, lng)
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK, Cesium.KeyboardEventModifier.CTRL);
+    },
+
+    async requestFloodData() {
+      const firstPoint = Cesium.Rectangle.northwest(this.boxSelection.rectangleSelector);
+      const secondPoint = Cesium.Rectangle.southeast(this.boxSelection.rectangleSelector);
+      const bbox = {
+        lat1: Cesium.Math.toDegrees(firstPoint.latitude),
+        lng1: Cesium.Math.toDegrees(firstPoint.longitude),
+        lat2: Cesium.Math.toDegrees(secondPoint.latitude),
+        lng2: Cesium.Math.toDegrees(secondPoint.longitude)
+      }
+      this.loading = true;
+      this.showRaster = false;
+      const response = await axios.post("http://localhost:5000/model/generate", {bbox})
+      this.taskId = response.data.taskId
+      if (this.taskId)
+        this.pollForTaskCompletion(this.taskId)
+    },
+
+    pollForTaskCompletion(taskId: string) {
+      if (this.loading) {
+        axios.get(`http://localhost:5000/tasks/${taskId}`)
+        .then((response: { data: { taskStatus: string; }; }) => {
+          if(response.data.taskStatus == "SUCCESS") {
+            this.loading = false;
+            if (this.boxSelection.selector)
+              this.boxSelection.selector.show = false;
+              this.showRaster = true;
+          } else {
+            // Try again after a timeout
+            setTimeout(this.pollForTaskCompletion, 3000, taskId)
+          }
+        });
+      }
+    },
+
+    async queryPoint(lat, lng) {
+      const response = await axios.get("http://localhost:5000/model/depth", {params: {lat, lng}});
+      this.plotData  = [{
+        x: response.data.time,
+        y: response.data.depth,
+        type: "scatter"
+      }]
+      this.viewer?.scene.preRender.removeEventListener(this.plotRenderEvt)
+      this.plotRenderEvt = () => {
+        const position = Cesium.Cartesian3.fromDegrees(lng, lat);
+        const canvasPosition = this.viewer?.scene.cartesianToCanvasCoordinates(position, this.scratch)
+        if (canvasPosition && Cesium.defined(canvasPosition)) {
+          // console.log(this.$refs.depthPlot)
+          // this.$refs.depthPlot.style.top = `${canvasPosition.y}px`
+          // this.$refs.depthPlot.style.left = `${canvasPosition.x}px`
+        }
+      }
+      this.viewer?.scene.preRender.addEventListener(this.plotRenderEvt)
+
+    },
+
+    cancelTask() {
+      axios.delete(`http://localhost:5000/tasks/${this.taskId}`)
+        .then(() => {
+          this.loading = false;
+          this.boxSelection.selector.show = false;
+          this.taskId = null;
+        });
+    },
+
     initSlider() {
       const slider = this.$refs.slider as HTMLDivElement;
       const mapContainer = this.$refs.mapContainer as HTMLDivElement;
@@ -136,13 +323,14 @@ export default Vue.extend({
     addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
       const providersFromAssets: Cesium.ImageryProvider[] = ionAssetIds.map((assetId: number) =>
-          new Cesium.IonImageryProvider({assetId}));
+        new Cesium.IonImageryProvider({assetId}));
       // Combine providersFromAssets and imageryProviders, accounting for undefined options
       const combinedProviders = providersFromAssets.concat(dataSource?.imageryProviders ?? [])
 
       // Add data sources to viewer, accounting for undefined options
       combinedProviders.forEach(provider => {
         const layer = this.viewer?.imageryLayers.addImageryProvider(provider);
+        console.log(layer)
         if (splitDirection != null && layer != null)
           layer.splitDirection = splitDirection;
       });
@@ -150,11 +338,14 @@ export default Vue.extend({
         this.viewer?.dataSources.add(geoJson);
       });
     },
+
+    removeDataSources() {
+      this.viewer?.dataSources.removeAll();
+    }
   }
 
 });
 </script>
-
 <style scoped>
 #slider {
   position: absolute;
@@ -168,5 +359,15 @@ export default Vue.extend({
 
 #slider:hover {
   cursor: ew-resize;
+}
+
+#depthPlot {
+  position: absolute;
+}
+
+.loading-dialog {
+  position: absolute;
+  top: 25%;
+  left: 15%;
 }
 </style>
