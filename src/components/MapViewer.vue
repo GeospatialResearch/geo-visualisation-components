@@ -96,7 +96,6 @@ export default Vue.extend({
         rectangleSelector: new Cesium.Rectangle()
       },
       taskId: null as string | null,
-      showRaster: false,
     }
   },
 
@@ -115,34 +114,47 @@ export default Vue.extend({
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
+
+    // Cesium.GeoJsonDataSource.load(
+    //   "http://localhost:8088/geoserver/digitaltwin/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=digitaltwin%3Abuilding_flood_status&outputFormat=application%2Fjson&srsName=EPSG:4326&viewparams=scenario:-1&cql_filter=bbox(geometry,172.6601121,-43.3780373,172.6607974,-43.3784382,'EPSG:4326')"
+    // ).then((datasource) => {
+    //   this.viewer?.dataSources.add(datasource)
+    //   console.log("ds added meme")
+    //   console.log(datasource);
+    // })
   },
 
   watch: {
     dataSources(dataSources) {
-      if (this.showRaster) {
-        console.log("1");
-        this.addDataSourcesProp(dataSources);
-      }
+      console.log("dataSources changed")
+      console.log(dataSources)
+      this.removeDataSources()
+      this.addDataSourcesProp(dataSources);
     },
     scenarios(scenarios) {
-      // if (this.showRaster) {
-      //   console.log("2");
+      console.log("scenarios changed")
+      this.removeDataSources();
       this.addDataSourcesProp(scenarios[0]);
       console.log(scenarios[0])
       // this.addDataSourcesProp(scenarios[0], Cesium.SplitDirection.LEFT);
         // this.addDataSourcesProp(scenarios[1], Cesium.SplitDirection.RIGHT);
       // }
     },
-    showRaster(showRaster) {
-      if (showRaster) {
-        console.log("3");
-        this.addDataSourcesProp(this.dataSources)
-        this.addDataSourcesProp(this.scenarios[0], Cesium.SplitDirection.LEFT)
-        // this.addDataSourcesProp(this.scenarios[1], Cesium.SplitDirection.RIGHT)
-      } else {
-        this.removeDataSources()
+  },
+
+  computed: {
+    selectionBbox() {
+      const firstPoint = Cesium.Rectangle.northwest(this.boxSelection.rectangleSelector);
+      const secondPoint = Cesium.Rectangle.southeast(this.boxSelection.rectangleSelector);
+      const bbox = {
+        lat1: Cesium.Math.toDegrees(firstPoint.latitude),
+        lng1: Cesium.Math.toDegrees(firstPoint.longitude),
+        lat2: Cesium.Math.toDegrees(secondPoint.latitude),
+        lng2: Cesium.Math.toDegrees(secondPoint.longitude)
       }
-    },
+      console.log("computed new bbox")
+      return bbox;
+    }
   },
 
   methods: {
@@ -206,6 +218,9 @@ export default Vue.extend({
       }) as Cesium.Entity;
 
       this.handler.setInputAction((event) => {
+        if (this.taskId == null) {
+          return
+        }
         const worldPosCartesian = this.viewer?.camera.pickEllipsoid(event.position);
         if (worldPosCartesian) {
           const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(worldPosCartesian)
@@ -217,18 +232,11 @@ export default Vue.extend({
     },
 
     async requestFloodData() {
-      const firstPoint = Cesium.Rectangle.northwest(this.boxSelection.rectangleSelector);
-      const secondPoint = Cesium.Rectangle.southeast(this.boxSelection.rectangleSelector);
-      const bbox = {
-        lat1: Cesium.Math.toDegrees(firstPoint.latitude),
-        lng1: Cesium.Math.toDegrees(firstPoint.longitude),
-        lat2: Cesium.Math.toDegrees(secondPoint.latitude),
-        lng2: Cesium.Math.toDegrees(secondPoint.longitude)
-      }
       this.loading = true;
-      this.showRaster = false;
-      const response = await axios.post("http://localhost:5000/model/generate", {bbox})
+      const bbox = this.selectionBbox
+      const response = await axios.post("http://localhost:5000/models/generate", {bbox})
       this.taskId = response.data.taskId
+      this.$emit('task-posted', {bbox, taskId: this.taskId})
       if (this.taskId)
         this.pollForTaskCompletion(this.taskId)
     },
@@ -241,7 +249,8 @@ export default Vue.extend({
             this.loading = false;
             if (this.boxSelection.selector)
               this.boxSelection.selector.show = false;
-              this.showRaster = true;
+            const floodModelId = response.data.taskValue
+            this.$emit('task-completed', {bbox: this.selectionBbox, taskId, floodModelId})
           } else {
             // Try again after a timeout
             setTimeout(this.pollForTaskCompletion, 3000, taskId)
@@ -251,7 +260,8 @@ export default Vue.extend({
     },
 
     async queryPoint(lat, lng) {
-      const response = await axios.get("http://localhost:5000/model/depth", {params: {lat, lng}});
+      const response = await axios.get(
+        `http://localhost:5000/tasks/${this.taskId}/model/depth`, {params: {lat, lng}});
       this.plotData  = [{
         x: response.data.time,
         y: response.data.depth,
@@ -277,6 +287,7 @@ export default Vue.extend({
           this.loading = false;
           this.boxSelection.selector.show = false;
           this.taskId = null;
+          this.removeDataSources()
         });
     },
 
@@ -321,6 +332,7 @@ export default Vue.extend({
     },
 
     addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
+      console.log("addDataSourcesProp");
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
       const providersFromAssets: Cesium.ImageryProvider[] = ionAssetIds.map((assetId: number) =>
         new Cesium.IonImageryProvider({assetId}));
@@ -335,12 +347,15 @@ export default Vue.extend({
           layer.splitDirection = splitDirection;
       });
       dataSource?.geoJsonDataSources?.forEach(geoJson => {
-        this.viewer?.dataSources.add(geoJson);
+        this.viewer?.dataSources.add(geoJson)
       });
     },
 
     removeDataSources() {
-      this.viewer?.dataSources.removeAll();
+      console.log("removing data sources");
+      console.log(this.viewer.dataSources.length)
+      this.viewer?.dataSources.removeAll(true);
+      // this.viewer?.imageryLayers.removeAll()
     }
   }
 
