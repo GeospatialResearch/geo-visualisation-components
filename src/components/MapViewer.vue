@@ -104,7 +104,11 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.viewer = new Cesium.Viewer("mapContainer");
+    this.viewer = new Cesium.Viewer("mapContainer", {
+      animation: false,
+      timeline: false,
+      sceneModePicker: false,
+    });
     this.setScreenSpaceEvents();
     // this.initSlider();
 
@@ -114,6 +118,10 @@ export default Vue.extend({
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
+    this.viewer.homeButton.viewModel.command.beforeExecute.addEventListener((e) => {
+      e.cancel = true;
+      this.viewer.scene.camera.flyTo({destination: initPos})
+    })
 
     // Cesium.GeoJsonDataSource.load(
     //   "http://localhost:8088/geoserver/digitaltwin/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=digitaltwin%3Abuilding_flood_status&outputFormat=application%2Fjson&srsName=EPSG:4326&viewparams=scenario:-1&cql_filter=bbox(geometry,172.6601121,-43.3780373,172.6607974,-43.3784382,'EPSG:4326')"
@@ -128,7 +136,7 @@ export default Vue.extend({
     dataSources(dataSources) {
       console.log("dataSources changed")
       console.log(dataSources)
-      this.removeDataSources()
+      // this.removeDataSources()
       this.addDataSourcesProp(dataSources);
     },
     scenarios(scenarios) {
