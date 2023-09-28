@@ -2,7 +2,16 @@
   <!-- Renders map inside container -->
   <div>
     <div id="mapContainer" ref="mapContainer">
-      <div v-if="scenarios.length >= 2" id="slider" ref="slider" />
+      <div v-if="scenarios.length >= 2">
+        <button v-for="scenario of scenarios"
+                @click="selectedScenario = scenario">
+          {{ scenario.name }}
+        </button>
+        <button @click="selectedScenario = null">
+          Clear Scenarios
+        </button>
+        <div>Selected: {{ selectedScenario ? selectedScenario.name : "None" }}</div>
+      </div>
     </div>
     <b-card v-if="loading" class="loading-dialog">
       <LoadingSpinner />
@@ -83,6 +92,7 @@ export default Vue.extend({
     return {
       /** Cesium viewer and map renderer */
       viewer: null as Cesium.Viewer | null,
+      selectedScenario: null as Scenario,
       loading: false,
       handler: null as Cesium.ScreenSpaceEventHandler | null,
       plotData: null as any, //todo
@@ -109,6 +119,7 @@ export default Vue.extend({
       timeline: false,
       sceneModePicker: false,
     });
+    console.log(this.viewer.homeButton)
     this.setScreenSpaceEvents();
     // this.initSlider();
 
@@ -139,15 +150,23 @@ export default Vue.extend({
       // this.removeDataSources()
       this.addDataSourcesProp(dataSources);
     },
-    scenarios(scenarios) {
+    scenarios() {
       console.log("scenarios changed")
-      this.removeDataSources();
-      this.addDataSourcesProp(scenarios[0]);
-      console.log(scenarios[0])
-      // this.addDataSourcesProp(scenarios[0], Cesium.SplitDirection.LEFT);
-        // this.addDataSourcesProp(scenarios[1], Cesium.SplitDirection.RIGHT);
-      // }
+      // this.removeDataSources();
+      for (const scenario of this.scenarios) {
+        this.addDataSourcesProp(scenario)
+      }
     },
+    selectedScenario(newSelected, oldSelected) {
+      console.log(oldSelected)
+      console.log(newSelected)
+      if (oldSelected) {
+        this.setScenarioDatasourceVisibility(oldSelected, false)
+      }
+      if (newSelected) {
+         this.setScenarioDatasourceVisibility(newSelected, true)
+      }
+    }
   },
 
   computed: {
@@ -162,10 +181,16 @@ export default Vue.extend({
       }
       console.log("computed new bbox")
       return bbox;
-    }
+    },
   },
 
   methods: {
+    setScenarioDatasourceVisibility(scenario: Scenario, visibility: boolean) {
+      for (const ds of scenario.geoJsonDataSources) {
+        ds.show = visibility;
+      }
+    },
+
     setScreenSpaceEvents() {
       if (this.viewer)
         this.viewer.scene.screenSpaceCameraController.enableLook = false
@@ -355,6 +380,8 @@ export default Vue.extend({
           layer.splitDirection = splitDirection;
       });
       dataSource?.geoJsonDataSources?.forEach(geoJson => {
+        console.log("add geojson")
+        console.log(geoJson)
         this.viewer?.dataSources.add(geoJson)
       });
     },
