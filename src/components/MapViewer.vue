@@ -2,16 +2,10 @@
   <!-- Renders map inside container -->
   <div>
     <div id="mapContainer" ref="mapContainer">
-      <div v-if="scenarios.length >= 2">
-        <button v-for="scenario of scenarios"
-                @click="selectedScenario = scenario">
-          {{ scenario.name }}
-        </button>
-        <button @click="selectedScenario = null">
-          Clear Scenarios
-        </button>
-        <div>Selected: {{ selectedScenario ? selectedScenario.name : "None" }}</div>
-      </div>
+      <select v-model="selectedScenario">
+        <option :value=null>No Scenario</option>
+        <option v-for="scenario of scenarios" :value="scenario">{{ scenario.name }}</option>
+      </select>
     </div>
     <b-card v-if="loading" class="loading-dialog">
       <LoadingSpinner />
@@ -119,9 +113,7 @@ export default Vue.extend({
       timeline: false,
       sceneModePicker: false,
     });
-    console.log(this.viewer.homeButton)
     this.setScreenSpaceEvents();
-    // this.initSlider();
 
     if (!this.viewer.scene.pickPositionSupported) {
       alert("This browser does not support pickPosition.")
@@ -134,13 +126,6 @@ export default Vue.extend({
       this.viewer.scene.camera.flyTo({destination: initPos})
     })
 
-    // Cesium.GeoJsonDataSource.load(
-    //   "http://localhost:8088/geoserver/digitaltwin/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=digitaltwin%3Abuilding_flood_status&outputFormat=application%2Fjson&srsName=EPSG:4326&viewparams=scenario:-1&cql_filter=bbox(geometry,172.6601121,-43.3780373,172.6607974,-43.3784382,'EPSG:4326')"
-    // ).then((datasource) => {
-    //   this.viewer?.dataSources.add(datasource)
-    //   console.log("ds added meme")
-    //   console.log(datasource);
-    // })
   },
 
   watch: {
@@ -324,45 +309,6 @@ export default Vue.extend({
         });
     },
 
-    initSlider() {
-      const slider = this.$refs.slider as HTMLDivElement;
-      const mapContainer = this.$refs.mapContainer as HTMLDivElement;
-      if (this.viewer != null) {
-        this.viewer.scene.splitPosition = (slider.offsetLeft ?? 0) / (mapContainer.offsetWidth ?? 1);
-      }
-
-      const handler = new Cesium.ScreenSpaceEventHandler(slider as unknown as HTMLCanvasElement);
-      let moveActive = false;
-
-      const move = (movement: Cesium.ScreenSpaceEventHandler.MotionEvent) => {
-        if (!moveActive) {
-          return;
-        }
-
-        const relativeOffset = movement.endPosition.x;
-        const splitPosition = ((slider.offsetLeft ?? 0) + relativeOffset) / (mapContainer.offsetWidth ?? 1);
-        slider.style.left = `${100.0 * splitPosition}%`;
-        if (this.viewer != null)
-          this.viewer.scene.splitPosition = splitPosition;
-      }
-
-      handler.setInputAction(() => {
-        moveActive = true;
-      }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
-      handler.setInputAction(function () {
-        moveActive = true;
-      }, Cesium.ScreenSpaceEventType.PINCH_START);
-
-      handler.setInputAction(move, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-      handler.setInputAction(move, Cesium.ScreenSpaceEventType.PINCH_MOVE);
-
-      handler.setInputAction(function () {
-        moveActive = false;
-      }, Cesium.ScreenSpaceEventType.LEFT_UP);
-      handler.setInputAction(function () {
-        moveActive = false;
-      }, Cesium.ScreenSpaceEventType.PINCH_END);
-    },
 
     addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
       console.log("addDataSourcesProp");
@@ -397,19 +343,6 @@ export default Vue.extend({
 });
 </script>
 <style scoped>
-#slider {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  background-color: #d3d3d3;
-  width: 5px;
-  height: 100%;
-  z-index: 9999;
-}
-
-#slider:hover {
-  cursor: ew-resize;
-}
 
 #depthPlot {
   position: absolute;
