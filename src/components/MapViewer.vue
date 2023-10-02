@@ -100,8 +100,11 @@ export default Vue.extend({
     dataSources(dataSources) {
       this.addDataSourcesProp(dataSources);
     },
-    scenarios() {
-      for (const scenario of this.scenarios) {
+    'dataSources.geoJsonDataSources'() {
+      this.addDataSourcesProp(this.dataSources)
+    },
+    scenarios(scenarios) {
+      for (const scenario of scenarios) {
         this.addDataSourcesProp(scenario)
       }
     },
