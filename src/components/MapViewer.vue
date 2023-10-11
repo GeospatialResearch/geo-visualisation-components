@@ -2,7 +2,7 @@
   <!-- Renders map inside container -->
   <div>
     <div id="mapContainer" ref="mapContainer">
-      <select v-model="selectedScenario">
+      <select v-model="selectedScenario" v-if="scenarios.length > 0">
         <option :value=null>No Scenario</option>
         <option v-for="scenario of scenarios" :value="scenario">{{ scenario.name }}</option>
       </select>
@@ -101,6 +101,7 @@ export default Vue.extend({
       this.addDataSourcesProp(dataSources);
     },
     'dataSources.geoJsonDataSources'() {
+      this.viewer?.dataSources.removeAll(true);
       this.addDataSourcesProp(this.dataSources)
     },
     scenarios(scenarios) {
@@ -136,13 +137,10 @@ export default Vue.extend({
       // Add data sources to viewer, accounting for undefined options
       combinedProviders.forEach(provider => {
         const layer = this.viewer?.imageryLayers.addImageryProvider(provider);
-        console.log(layer)
         if (splitDirection != null && layer != null)
           layer.splitDirection = splitDirection;
       });
       dataSource?.geoJsonDataSources?.forEach(geoJson => {
-        console.log("add geojson")
-        console.log(geoJson)
         this.viewer?.dataSources.add(geoJson)
       });
     },
