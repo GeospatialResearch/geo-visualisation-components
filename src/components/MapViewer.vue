@@ -241,7 +241,13 @@ export default Vue.extend({
             const floodModelId = response.data.taskValue
             this.$emit('task-completed', {bbox: this.selectionBbox, taskId, floodModelId})
           } else {
-            // Try again after a timeout
+            // Try again after a timeout if the task is not completed
+            setTimeout(this.pollForTaskCompletion, 3000, taskId)
+          }
+        })
+        .catch((err) => {
+          if (err.response.status === 500 || err.response.status === 503) {
+            // Try again if the server responds SERVICE_UNAVALIABLE, indicating a connection problem between Flask and Celery
             setTimeout(this.pollForTaskCompletion, 3000, taskId)
           }
         });
