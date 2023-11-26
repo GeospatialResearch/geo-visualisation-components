@@ -77,6 +77,10 @@ export default Vue.extend({
       type: Array as () => Array<Scenario>,
       default() { return [] }
     },
+    scenarioOptions: {
+      type: Object,
+      default() { return {} }
+    },
   },
 
   data() {
@@ -219,7 +223,7 @@ export default Vue.extend({
     async requestFloodData() {
       this.loading = true;
       const bbox = this.selectionBbox
-      const response = await axios.post("http://localhost:5000/models/generate", {bbox})
+      const response = await axios.post("http://localhost:5000/models/generate", {bbox, scenarioOptions: this.scenarioOptions})
       this.taskId = response.data.taskId
       this.$emit('task-posted', {bbox, taskId: this.taskId})
       if (this.taskId)
