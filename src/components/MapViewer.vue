@@ -114,31 +114,16 @@ export default Vue.extend({
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
-
-    // Cesium.GeoJsonDataSource.load(
-    //   "http://localhost:8088/geoserver/digitaltwin/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=digitaltwin%3Abuilding_flood_status&outputFormat=application%2Fjson&srsName=EPSG:4326&viewparams=scenario:-1&cql_filter=bbox(geometry,172.6601121,-43.3780373,172.6607974,-43.3784382,'EPSG:4326')"
-    // ).then((datasource) => {
-    //   this.viewer?.dataSources.add(datasource)
-    //   console.log("ds added meme")
-    //   console.log(datasource);
-    // })
   },
 
   watch: {
     dataSources(dataSources) {
-      console.log("dataSources changed")
-      console.log(dataSources)
       this.removeDataSources()
       this.addDataSourcesProp(dataSources);
     },
     scenarios(scenarios) {
-      console.log("scenarios changed")
       this.removeDataSources();
       this.addDataSourcesProp(scenarios[0]);
-      console.log(scenarios[0])
-      // this.addDataSourcesProp(scenarios[0], Cesium.SplitDirection.LEFT);
-        // this.addDataSourcesProp(scenarios[1], Cesium.SplitDirection.RIGHT);
-      // }
     },
   },
 
