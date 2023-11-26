@@ -350,7 +350,20 @@ export default Vue.extend({
       console.log("removing data sources");
       console.log(this.viewer.dataSources.length)
       this.viewer?.dataSources.removeAll(true);
-      // this.viewer?.imageryLayers.removeAll()
+      let i = 0;
+      let len = this.viewer?.imageryLayers.length;
+      while (i < len) {
+        console.log(`${i}/${len}`)
+        const layer = this.viewer?.imageryLayers.get(i)
+        if (layer?.isBaseLayer()) {
+          i++;
+        } else {
+          this.viewer?.imageryLayers.remove(layer, true)
+          i = 0;
+          len = this.viewer?.imageryLayers.length
+        }
+      }
+      console.log("removed datasources")
     }
   }
 
