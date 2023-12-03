@@ -13,3 +13,10 @@ export interface MapViewerDataSourceOptions {
 export interface Scenario extends MapViewerDataSourceOptions {
   name: string
 }
+
+export interface Bbox {
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+}
