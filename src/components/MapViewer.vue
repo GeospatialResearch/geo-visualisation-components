@@ -4,13 +4,13 @@
     <div id="mapContainer" ref="mapContainer">
       <div v-if="scenarios.length >= 2" id="slider" ref="slider" />
     </div>
-    <b-card v-if="loading" class="loading-dialog">
+    <b-card v-show="loading" class="loading-dialog">
       <LoadingSpinner />
       <h2>Generating model</h2>
       <b-btn variant="danger" @click="cancelTask">Cancel</b-btn>
     </b-card>
-    <div v-else>
-      <Plotly id="depthPlot" v-if="plotData" :data="plotData"/>
+    <div v-show="!loading">
+      <Plotly ref="depthPlot" v-if="plotData" :data="plotData"/>
     </div>
   </div>
 </template>
