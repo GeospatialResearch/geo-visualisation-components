@@ -110,7 +110,6 @@ export default Vue.extend({
   mounted() {
     this.viewer = new Cesium.Viewer("mapContainer");
     this.setScreenSpaceEvents();
-    // this.initSlider();
 
     if (!this.viewer.scene.pickPositionSupported) {
       alert("This browser does not support pickPosition.")
@@ -141,7 +140,6 @@ export default Vue.extend({
         lat2: Cesium.Math.toDegrees(secondPoint.latitude),
         lng2: Cesium.Math.toDegrees(secondPoint.longitude)
       }
-      console.log("computed new bbox")
       return bbox;
     }
   },
@@ -327,7 +325,6 @@ export default Vue.extend({
     },
 
     addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
-      console.log("addDataSourcesProp");
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
       const providersFromAssets: Cesium.ImageryProvider[] = ionAssetIds.map((assetId: number) =>
         new Cesium.IonImageryProvider({assetId}));
@@ -337,7 +334,6 @@ export default Vue.extend({
       // Add data sources to viewer, accounting for undefined options
       combinedProviders.forEach(provider => {
         const layer = this.viewer?.imageryLayers.addImageryProvider(provider);
-        console.log(layer)
         if (splitDirection != null && layer != null)
           layer.splitDirection = splitDirection;
       });
@@ -347,13 +343,10 @@ export default Vue.extend({
     },
 
     removeDataSources() {
-      console.log("removing data sources");
-      console.log(this.viewer.dataSources.length)
       this.viewer?.dataSources.removeAll(true);
       let i = 0;
       let len = this.viewer?.imageryLayers.length;
       while (i < len) {
-        console.log(`${i}/${len}`)
         const layer = this.viewer?.imageryLayers.get(i)
         if (layer?.isBaseLayer()) {
           i++;
@@ -363,7 +356,6 @@ export default Vue.extend({
           len = this.viewer?.imageryLayers.length
         }
       }
-      console.log("removed datasources")
     }
   }
 
