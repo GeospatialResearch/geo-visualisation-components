@@ -9,8 +9,12 @@
       <h2>Generating model</h2>
       <b-btn variant="danger" @click="cancelTask">Cancel</b-btn>
     </b-card>
+    <b-card v-show="error" class="loading-dialog">
+      <h3>{{ error }}</h3>
+      <b-btn variant="info" @click="cancelTask">Ok</b-btn>
+    </b-card>
     <div v-show="!loading">
-      <Plotly ref="depthPlot" v-if="plotData" :data="plotData"/>
+      <Plotly ref="depthPlot" v-if="plotData" :data="plotData" />
     </div>
   </div>
 </template>
@@ -71,15 +75,21 @@ export default Vue.extend({
     },
     dataSources: {
       type: Object as PropType<MapViewerDataSourceOptions>,
-      default() { return {} }
+      default() {
+        return {}
+      }
     },
     scenarios: {
       type: Array as () => Array<Scenario>,
-      default() { return [] }
+      default() {
+        return []
+      }
     },
     scenarioOptions: {
       type: Object,
-      default() { return {} }
+      default() {
+        return {}
+      }
     },
   },
 
@@ -90,7 +100,8 @@ export default Vue.extend({
       loading: false,
       handler: null as Cesium.ScreenSpaceEventHandler | null,
       plotData: null as any, //todo
-      plotRenderEvt: () => {},
+      plotRenderEvt: () => {
+      },
       scratch: new Cesium.Cartesian2(),
       boxSelection: {
         selector: new Cesium.Entity(),
@@ -100,6 +111,7 @@ export default Vue.extend({
         rectangleSelector: new Cesium.Rectangle()
       },
       taskId: null as string | null,
+      error: null as string | null,
     }
   },
 
@@ -177,8 +189,8 @@ export default Vue.extend({
       this.handler.setInputAction(drawSelector, Cesium.ScreenSpaceEventType.MOUSE_MOVE, Cesium.KeyboardEventModifier.SHIFT);
 
       const getSelectorLocation = new Cesium.CallbackProperty((_time, result) => {
-          return Cesium.Rectangle.clone(this.boxSelection.rectangleSelector, result);
-        }, false);
+        return Cesium.Rectangle.clone(this.boxSelection.rectangleSelector, result);
+      }, false);
 
       const startClickShift = () => {
         this.boxSelection.mouseDown = true;
@@ -221,7 +233,10 @@ export default Vue.extend({
     async requestFloodData() {
       this.loading = true;
       const bbox = this.selectionBbox
-      const response = await axios.post("http://localhost:5000/models/generate", {bbox, scenarioOptions: this.scenarioOptions})
+      const response = await axios.post("http://localhost:5000/models/generate", {
+        bbox,
+        scenarioOptions: this.scenarioOptions
+      })
       this.taskId = response.data.taskId
       this.$emit('task-posted', {bbox, taskId: this.taskId})
       if (this.taskId)
@@ -231,31 +246,30 @@ export default Vue.extend({
     pollForTaskCompletion(taskId: string) {
       if (this.loading) {
         axios.get(`http://localhost:5000/tasks/${taskId}`)
-        .then((response: { data: { taskStatus: string; }; }) => {
-          if(response.data.taskStatus == "SUCCESS") {
-            this.loading = false;
-            if (this.boxSelection.selector)
-              this.boxSelection.selector.show = false;
-            const floodModelId = response.data.taskValue
-            this.$emit('task-completed', {bbox: this.selectionBbox, taskId, floodModelId})
-          } else {
-            // Try again after a timeout if the task is not completed
-            setTimeout(this.pollForTaskCompletion, 3000, taskId)
-          }
-        })
-        .catch((err) => {
-          if (err.response.status === 500 || err.response.status === 503) {
-            // Try again if the server responds SERVICE_UNAVALIABLE, indicating a connection problem between Flask and Celery
-            setTimeout(this.pollForTaskCompletion, 3000, taskId)
-          }
-        });
+            .then((response: { data: { taskStatus: string; }; }) => {
+              if (response.data.taskStatus == "SUCCESS") {
+                this.loading = false;
+                if (this.boxSelection.selector)
+                  this.boxSelection.selector.show = false;
+                const floodModelId = response.data.taskValue
+                this.$emit('task-completed', {bbox: this.selectionBbox, taskId, floodModelId})
+              } else {
+                // Try again after a timeout if the task is not completed
+                setTimeout(this.pollForTaskCompletion, 3000, taskId)
+              }
+            })
+            .catch((err) => {
+              this.$emit('task-failed', err);
+              this.error = "Task failed in the backend.\nPlease try again.";
+              this.loading = false;
+            });
       }
     },
 
     async queryPoint(lat, lng) {
       const response = await axios.get(
-        `http://localhost:5000/tasks/${this.taskId}/model/depth`, {params: {lat, lng}});
-      this.plotData  = [{
+          `http://localhost:5000/tasks/${this.taskId}/model/depth`, {params: {lat, lng}});
+      this.plotData = [{
         x: response.data.time,
         y: response.data.depth,
         type: "scatter"
@@ -276,12 +290,13 @@ export default Vue.extend({
 
     cancelTask() {
       axios.delete(`http://localhost:5000/tasks/${this.taskId}`)
-        .then(() => {
-          this.loading = false;
-          this.boxSelection.selector.show = false;
-          this.taskId = null;
-          this.removeDataSources()
-        });
+          .then(() => {
+            this.loading = false;
+            this.boxSelection.selector.show = false;
+            this.taskId = null;
+            this.error = null;
+            this.removeDataSources()
+          });
     },
 
     initSlider() {
@@ -327,7 +342,7 @@ export default Vue.extend({
     addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
       const providersFromAssets: Cesium.ImageryProvider[] = ionAssetIds.map((assetId: number) =>
-        new Cesium.IonImageryProvider({assetId}));
+          new Cesium.IonImageryProvider({assetId}));
       // Combine providersFromAssets and imageryProviders, accounting for undefined options
       const combinedProviders = providersFromAssets.concat(dataSource?.imageryProviders ?? [])
 
