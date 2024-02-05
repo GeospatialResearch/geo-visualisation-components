@@ -233,14 +233,26 @@ export default Vue.extend({
     async requestFloodData() {
       this.loading = true;
       const bbox = this.selectionBbox
-      const response = await axios.post("http://localhost:5000/models/generate", {
+      axios.post("http://localhost:5000/models/generate", {
         bbox,
         scenarioOptions: this.scenarioOptions
+      }).then((response) => {
+        this.taskId = response.data.taskId
+        this.$emit('task-posted', {bbox, taskId: this.taskId})
+        if (this.taskId)
+          this.pollForTaskCompletion(this.taskId)
+      }).catch((err) => {
+        this.$emit('task-failed', err);
+        if (err.response == undefined) {
+          this.error = "Network error - Cannot reach backend."
+        } else if (err.response.status == 503) {
+          this.error = "Request to start task failed.\nCelery workers are not active.";
+        } else {
+          this.error = `Request to start task failed.\nError code ${err.response.status}.`;
+        }
+        this.loading = false;
       })
-      this.taskId = response.data.taskId
-      this.$emit('task-posted', {bbox, taskId: this.taskId})
-      if (this.taskId)
-        this.pollForTaskCompletion(this.taskId)
+
     },
 
     pollForTaskCompletion(taskId: string) {
