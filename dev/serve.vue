@@ -5,11 +5,13 @@
         :cesium-access-token="cesiumAccessToken"
         :init-lat="-43.523392915353384"
         :init-long="172.58414599255107"
+        :init-base-layer="baseLayer"
     />
   </div>
 </template>
 
 <script lang="ts">
+import * as Cesium from 'cesium';
 import Vue from 'vue';
 import MapViewer from "@/components/MapViewer.vue";
 
@@ -21,6 +23,7 @@ export default Vue.extend({
   data() {
     return {
       cesiumAccessToken: process.env.VUE_APP_CESIUM_ACCESS_TOKEN,
+      baseLayer: new Cesium.ImageryLayer(new Cesium.OpenStreetMapImageryProvider({}), {})
     }
   }
 });

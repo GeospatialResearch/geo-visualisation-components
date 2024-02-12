@@ -54,6 +54,10 @@ export default Vue.extend({
       type: Number,
       default: 2000,
     },
+    initBaseLayer: {
+      type: Cesium.ImageryLayer,
+      default: undefined // Use Cesium's default
+    },
     dataSources: {
       type: Object as PropType<MapViewerDataSourceOptions>,
       default() {
@@ -82,6 +86,7 @@ export default Vue.extend({
 
   mounted() {
     this.viewer = new Cesium.Viewer("mapContainer", {
+      baseLayer: this.initBaseLayer,
       animation: false,
       timeline: false,
       sceneModePicker: false,
