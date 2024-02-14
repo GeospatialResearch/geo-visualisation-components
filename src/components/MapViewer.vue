@@ -101,6 +101,13 @@ export default Vue.extend({
 
   },
 
+  beforeDestroy() {
+    // Free up WebGL resources, reducing memory leak when destroying and recreating components
+    this.viewer?.dataSources.removeAll(true);
+    this.viewer.entities.removeAll();
+    this.viewer.destroy();
+  },
+
   watch: {
     dataSources(dataSources) {
       this.addDataSourcesProp(dataSources);
