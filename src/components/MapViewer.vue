@@ -25,7 +25,7 @@ declare global {
   }
 }
 // The public served directory for Cesium to find assets in, copied in during the build process
-window.CESIUM_BASE_URL = "./";
+window.CESIUM_BASE_URL = window.location.origin;
 
 
 export default Vue.extend({
