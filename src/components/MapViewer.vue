@@ -1,9 +1,7 @@
 <template>
   <!-- Renders map inside container -->
   <div>
-    <div id="mapContainer" ref="mapContainer">
-      <div v-if="scenarios.length >= 2" id="slider" ref="slider" />
-    </div>
+    <div id="mapContainer" ref="mapContainer" />
     <b-card v-show="loading" class="loading-dialog">
       <LoadingSpinner />
       <h2>Generating model</h2>
@@ -30,8 +28,6 @@ import axios from "axios";
 import {Plotly} from "vue-plotly";
 import LoadingSpinner from "./LoadingSpinner.vue";
 
-console.log("V0.0.5")
-
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
   interface Window {
@@ -39,7 +35,7 @@ declare global {
   }
 }
 // The public served directory for Cesium to find assets in, copied in during the build process
-window.CESIUM_BASE_URL = "./";
+window.CESIUM_BASE_URL = window.location.origin;
 
 
 export default Vue.extend({
@@ -72,6 +68,10 @@ export default Vue.extend({
     initHeight: {
       type: Number,
       default: 2000,
+    },
+    initBaseLayer: {
+      type: Cesium.ImageryLayer,
+      default: undefined // Use Cesium's default
     },
     dataSources: {
       type: Object as PropType<MapViewerDataSourceOptions>,
@@ -120,7 +120,12 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.viewer = new Cesium.Viewer("mapContainer");
+    this.viewer = new Cesium.Viewer("mapContainer", {
+      baseLayer: this.initBaseLayer,
+      animation: false,
+      timeline: false,
+      sceneModePicker: false,
+    });
     this.setScreenSpaceEvents();
 
     if (!this.viewer.scene.pickPositionSupported) {
@@ -129,17 +134,42 @@ export default Vue.extend({
 
     const initPos = Cesium.Cartesian3.fromDegrees(this.initLong, this.initLat, this.initHeight);
     this.viewer.camera.flyTo({destination: initPos});
+    this.viewer.homeButton.viewModel.command.beforeExecute.addEventListener((e) => {
+      e.cancel = true;
+      this.viewer.scene.camera.flyTo({destination: initPos})
+    })
+
+  },
+
+  beforeDestroy() {
+    // Free up WebGL resources, reducing memory leak when destroying and recreating components
+    this.viewer?.dataSources.removeAll(true);
+    this.viewer.entities.removeAll();
+    this.viewer.destroy();
   },
 
   watch: {
     dataSources(dataSources) {
-      this.removeDataSources()
+      this.removeDataSources();
       this.addDataSourcesProp(dataSources);
     },
-    scenarios(scenarios) {
-      this.removeDataSources();
-      this.addDataSourcesProp(scenarios[0]);
+    'dataSources.geoJsonDataSources'() {
+      this.viewer?.dataSources.removeAll(true);
+      this.addDataSourcesProp(this.dataSources)
     },
+    scenarios(scenarios) {
+      for (const scenario of scenarios) {
+        this.addDataSourcesProp(scenario)
+      }
+    },
+    selectedScenario(newSelected, oldSelected) {
+      if (oldSelected) {
+        this.setScenarioDatasourceVisibility(oldSelected, false)
+      }
+      if (newSelected) {
+        this.setScenarioDatasourceVisibility(newSelected, true)
+      }
+    }
   },
 
   computed: {
@@ -157,6 +187,12 @@ export default Vue.extend({
   },
 
   methods: {
+    setScenarioDatasourceVisibility(scenario: Scenario, visibility: boolean) {
+      for (const ds of scenario.geoJsonDataSources) {
+        ds.show = visibility;
+      }
+    },
+
     setScreenSpaceEvents() {
       if (this.viewer)
         this.viewer.scene.screenSpaceCameraController.enableLook = false
@@ -389,19 +425,6 @@ export default Vue.extend({
 });
 </script>
 <style scoped>
-#slider {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  background-color: #d3d3d3;
-  width: 5px;
-  height: 100%;
-  z-index: 9999;
-}
-
-#slider:hover {
-  cursor: ew-resize;
-}
 
 #depthPlot {
   position: absolute;
