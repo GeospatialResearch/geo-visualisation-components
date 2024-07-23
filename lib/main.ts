@@ -1,7 +1,7 @@
 import type { App } from "vue";
 
 // Import vue components
-import * as components from "@/components/index";
+import * as components from "@/components";
 
 // install function executed by Vue.use()
 export default {

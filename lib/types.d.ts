@@ -1,4 +1,4 @@
-import * as Cesium from "cesium";
+import type * as Cesium from "cesium";
 
 export interface MapViewerDataSourceOptions {
   // Cesium Ion assets
