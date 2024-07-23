@@ -1,13 +1,11 @@
-import Vue, {VNode} from 'vue';
+import {createApp} from 'vue';
 import Dev from './serve.vue';
 // To register individual components where they are used (serve.vue) instead of using the
-// library as a whole, comment/remove this import and it's corresponding "Vue.use" call
+// library as a whole, comment/remove this import and it's corresponding "app.use" call
 import GeoVisualisationComponents from '@/entry.esm';
 
-Vue.use(GeoVisualisationComponents);
+const app = createApp(Dev);
 
-Vue.config.productionTip = false;
+app.use(GeoVisualisationComponents);
 
-new Vue({
-  render: (h): VNode => h(Dev),
-}).$mount('#app');
+app.mount('#app');

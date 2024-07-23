@@ -12,10 +12,9 @@
 
 <script lang="ts">
 import * as Cesium from 'cesium';
-import Vue from 'vue';
 import MapViewer from "@/components/MapViewer.vue";
 
-export default Vue.extend({
+export default {
   name: 'ServeDev',
   components: {
     MapViewer,
@@ -26,5 +25,5 @@ export default Vue.extend({
       baseLayer: new Cesium.ImageryLayer(new Cesium.OpenStreetMapImageryProvider({}), {})
     }
   }
-});
+};
 </script>
