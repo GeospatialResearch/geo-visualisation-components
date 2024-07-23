@@ -38,8 +38,7 @@
   "dependencies": {
     "axios": "^1.6.2",
     "bootstrap-vue": "^2.23.1",
-    "cesium": "^1.112.0",
-    "vue-plotly": "^1.1.0"
+    "cesium": "^1.112.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.5",

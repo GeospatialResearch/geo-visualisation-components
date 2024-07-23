@@ -11,22 +11,17 @@
       <h3>{{ error }}</h3>
       <b-btn variant="info" @click="cancelTask">Ok</b-btn>
     </b-card>
-    <div v-show="!loading">
-      <Plotly ref="depthPlot" v-if="plotData" :data="plotData" />
-    </div>
   </div>
 </template>
 
 <script lang="ts">
-// @ts-nocheck
-//todo
 import Vue, {PropType} from "vue";
 import * as Cesium from "cesium";
 import 'cesium/Source/Widgets/widgets.css'
 import {MapViewerDataSourceOptions, Scenario} from "@/types";
 import axios from "axios";
-import {Plotly} from "vue-plotly";
 import LoadingSpinner from "./LoadingSpinner.vue";
+//todo reinstate Plotly
 
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
@@ -43,7 +38,6 @@ export default Vue.extend({
 
   components: {
     LoadingSpinner,
-    Plotly,
   },
 
   props: {
