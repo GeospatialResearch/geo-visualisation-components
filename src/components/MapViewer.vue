@@ -15,11 +15,14 @@
 </template>
 
 <script lang="ts">
-import Vue, {PropType} from "vue";
-import * as Cesium from "cesium";
-import 'cesium/Source/Widgets/widgets.css'
-import {MapViewerDataSourceOptions, Scenario} from "@/types";
 import axios from "axios";
+import * as Cesium from "cesium";
+import type {PropType} from "vue"
+import {defineComponent} from "vue";
+
+import 'cesium/Source/Widgets/widgets.css'
+
+import type {MapViewerDataSourceOptions, Scenario} from "@/types";
 import LoadingSpinner from "./LoadingSpinner.vue";
 //todo reinstate Plotly
 
@@ -33,7 +36,7 @@ declare global {
 window.CESIUM_BASE_URL = window.location.origin;
 
 
-export default Vue.extend({
+export default defineComponent({
   name: "MapViewer",
 
   components: {
@@ -130,7 +133,7 @@ export default Vue.extend({
     this.viewer.camera.flyTo({destination: initPos});
     this.viewer.homeButton.viewModel.command.beforeExecute.addEventListener((e) => {
       e.cancel = true;
-      this.viewer.scene.camera.flyTo({destination: initPos})
+      this.viewer?.scene.camera.flyTo({destination: initPos})
     })
 
   },
@@ -138,25 +141,25 @@ export default Vue.extend({
   beforeDestroy() {
     // Free up WebGL resources, reducing memory leak when destroying and recreating components
     this.viewer?.dataSources.removeAll(true);
-    this.viewer.entities.removeAll();
-    this.viewer.destroy();
+    this.viewer?.entities.removeAll();
+    this.viewer?.destroy();
   },
 
   watch: {
-    dataSources(dataSources) {
+    async dataSources(dataSources: MapViewerDataSourceOptions) {
       this.removeDataSources();
-      this.addDataSourcesProp(dataSources);
+      await this.addDataSourcesProp(dataSources);
     },
-    'dataSources.geoJsonDataSources'() {
+    async 'dataSources.geoJsonDataSources'() {
       this.viewer?.dataSources.removeAll(true);
-      this.addDataSourcesProp(this.dataSources)
+      await this.addDataSourcesProp(this.dataSources)
     },
-    scenarios(scenarios) {
-      for (const scenario of scenarios) {
-        this.addDataSourcesProp(scenario)
-      }
+    async scenarios(scenarios: Scenario[]) {
+      // add data sources for each scenario async and wait until all are complete.
+      const addScenarioPromises = scenarios.map(async (scenario) => await this.addDataSourcesProp(scenario))
+      await Promise.all(addScenarioPromises);
     },
-    selectedScenario(newSelected, oldSelected) {
+    selectedScenario(newSelected: Scenario, oldSelected: Scenario) {
       if (oldSelected) {
         this.setScenarioDatasourceVisibility(oldSelected, false)
       }
@@ -182,8 +185,10 @@ export default Vue.extend({
 
   methods: {
     setScenarioDatasourceVisibility(scenario: Scenario, visibility: boolean) {
-      for (const ds of scenario.geoJsonDataSources) {
-        ds.show = visibility;
+      if (scenario.geoJsonDataSources != undefined) {
+        for (const ds of scenario.geoJsonDataSources) {
+          ds.show = visibility;
+        }
       }
     },
 
@@ -246,7 +251,7 @@ export default Vue.extend({
         }
       }) as Cesium.Entity;
 
-      this.handler.setInputAction((event) => {
+      this.handler.setInputAction((event: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
         if (this.taskId == null) {
           return
         }
@@ -288,7 +293,7 @@ export default Vue.extend({
     pollForTaskCompletion(taskId: string) {
       if (this.loading) {
         axios.get(`http://localhost:5000/tasks/${taskId}`)
-            .then((response: { data: { taskStatus: string; }; }) => {
+            .then((response: { data: { taskStatus: string; taskValue: number }; }) => {
               if (response.data.taskStatus == "SUCCESS") {
                 this.loading = false;
                 if (this.boxSelection.selector)
@@ -308,7 +313,7 @@ export default Vue.extend({
       }
     },
 
-    async queryPoint(lat, lng) {
+    async queryPoint(lat: number, lng: number) {
       const response = await axios.get(
           `http://localhost:5000/tasks/${this.taskId}/model/depth`, {params: {lat, lng}});
       this.plotData = [{
@@ -381,10 +386,10 @@ export default Vue.extend({
       }, Cesium.ScreenSpaceEventType.PINCH_END);
     },
 
-    addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
+    async addDataSourcesProp(dataSource: MapViewerDataSourceOptions, splitDirection?: Cesium.SplitDirection) {
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? []
-      const providersFromAssets: Cesium.ImageryProvider[] = ionAssetIds.map((assetId: number) =>
-          new Cesium.IonImageryProvider({assetId}));
+      const providersFromAssets: Cesium.ImageryProvider[] = await Promise.all(ionAssetIds.map((assetId: number) =>
+          Cesium.IonImageryProvider.fromAssetId(assetId)));
       // Combine providersFromAssets and imageryProviders, accounting for undefined options
       const combinedProviders = providersFromAssets.concat(dataSource?.imageryProviders ?? [])
 
@@ -402,15 +407,15 @@ export default Vue.extend({
     removeDataSources() {
       this.viewer?.dataSources.removeAll(true);
       let i = 0;
-      let len = this.viewer?.imageryLayers.length;
+      let len = this.viewer?.imageryLayers.length ?? 0;
       while (i < len) {
-        const layer = this.viewer?.imageryLayers.get(i)
+        const layer = this.viewer?.imageryLayers.get(i)!
         if (layer?.isBaseLayer()) {
           i++;
         } else {
           this.viewer?.imageryLayers.remove(layer, true)
           i = 0;
-          len = this.viewer?.imageryLayers.length
+          len = this.viewer?.imageryLayers.length ?? 0;
         }
       }
     }

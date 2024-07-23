@@ -1,4 +1,4 @@
-import {App} from 'vue';
+import type {App} from 'vue';
 
 // Import vue components
 import * as components from '@/components/index';

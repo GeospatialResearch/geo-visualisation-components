@@ -1,40 +1,11 @@
 {
-  "compilerOptions": {
-    "noImplicitAny": false, // Temp for now TODO
-    "allowJs": true, // temp for now
-    "target": "esnext",
-    "module": "esnext",
-    "strict": true,
-    "declaration": true,
-    "declarationDir": "dist/types",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "newLine": "lf",
-    "types": [
-      "node",
-      "vue"
-    ],
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
-  },
-  "exclude": [
-    "node_modules",
-    "dist"
+    {
+      "path": "./tsconfig.app.json"
+    }
   ]
 }

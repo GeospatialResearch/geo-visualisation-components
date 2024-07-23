@@ -18,22 +18,24 @@
   "repository": "github:GeospatialResearch/geo-visualisation-components",
   "homepage": "https://github.com/GeospatialResearch/geo-visualisation-components",
   "bugs": "https://github.com/GeospatialResearch/geo-visualisation-components/issues",
-  "author": "Luke Parkinson (https://github.com/LukeParky)",
-  "main": "dist/geo-visualisation-components.common.js",
-  "browser": "dist/geo-visualisation-components.esm.js",
-  "module": "dist/geo-visualisation-components.esm.js",
-  "unpkg": "dist/geo-visualisation-components.min.js",
-  "types": "dist/types/src/entry.esm.d.ts",
-  "files": [
-    "dist/*",
-    "src/*"
-  ],
   "scripts": {
-    "serve": "vue-cli-service serve dev/serve.ts",
-    "prebuild": "rimraf ./dist",
-    "build": "vue-cli-service build --target lib --name geo-visualisation-components ./src/entry.ts",
-    "postbuild": "rimraf ./dist/types/dev ./dist/types/src/entry.d.ts",
-    "lint": "eslint src dev build ./*.ts ./*.js --ext .js,.ts,.vue"
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build --force",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "format": "prettier --write src/"
+  },
+  "type": "module",
+  "files": ["dist"],
+  "main": "./dist/geo-visualisation-components.umd.cjs",
+  "module": "./dist/geo-visualisation-components.js",
+  "exports": {
+    ".": {
+      "import": "./dist/geo-visualisation-components.js",
+      "require": "./dist/geo-visualisation-components.umd.cjs"
+    }
   },
   "dependencies": {
     "axios": "^1.6.2",
@@ -41,27 +43,21 @@
     "cesium": "^1.112.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.5",
-    "@babel/preset-env": "^7.23.5",
-    "@babel/preset-typescript": "^7.23.3",
-    "@types/cesium": "^1.70.0",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "@vue/compat": "^3.1.0",
-    "@vue/cli-plugin-babel": "^5.0.8",
-    "@vue/cli-plugin-typescript": "^5.0.8",
-    "@vue/cli-service": "^5.0.8",
-    "@vue/compiler-sfc": "^3.1.0",
-    "@vue/eslint-config-typescript": "^11.0.3",
-    "copy-webpack-plugin": "^11.0.0",
-    "eslint": "^8.55.0",
-    "eslint-plugin-vue": "^9.19.2",
-    "node-polyfill-webpack-plugin": "^2.0.1",
-    "rimraf": "^3.0.2",
-    "typescript": "^4.9.5",
+    "@rushstack/eslint-patch": "^1.8.0",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^20.14.5",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^13.0.0",
+    "@vue/tsconfig": "^0.5.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.23.0",
+    "npm-run-all2": "^6.2.0",
+    "prettier": "^3.2.5",
+    "typescript": "~5.4.0",
+    "vite": "^5.3.1",
     "vue": "^3.1.0",
-    "vue-eslint-parser": "^9.3.2",
-    "webpack": "^5.89.0"
+    "vue-tsc": "^2.0.21"
   },
   "peerDependencies": {
     "vue": "^3.1.0"
