@@ -1,8 +1,0 @@
-{
-  // Does not include the dev directory but otherwise matches tsconfig.lib.json
-  "extends": "tsconfig.lib.json",
-  "include": ["env.d.ts",
-    "lib/**/*",
-    "lib/**/*.vue"
-  ],
-}
