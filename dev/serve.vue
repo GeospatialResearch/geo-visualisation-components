@@ -21,7 +21,7 @@ export default {
   },
   data() {
     return {
-      cesiumAccessToken: import.meta.env.VUE_APP_CESIUM_ACCESS_TOKEN,
+      cesiumAccessToken: import.meta.env.VITE_CESIUM_ACCESS_TOKEN,
       baseLayer: new Cesium.ImageryLayer(new Cesium.OpenStreetMapImageryProvider({}), {})
     }
   }
