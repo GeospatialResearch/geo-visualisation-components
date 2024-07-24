@@ -2,15 +2,15 @@
   <!-- Renders map inside container -->
   <div>
     <div id="mapContainer" ref="mapContainer" />
-    <b-card v-show="loading" class="loading-dialog">
+    <div v-show="loading" class="loading-dialog">
       <LoadingSpinner />
       <h2>Generating model</h2>
-      <b-btn variant="danger" @click="cancelTask">Cancel</b-btn>
-    </b-card>
-    <b-card v-show="error" class="loading-dialog">
+      <button variant="danger" @click="cancelTask">Cancel</button>
+    </div>
+    <div v-show="error" class="loading-dialog">
       <h3>{{ error }}</h3>
-      <b-btn variant="info" @click="cancelTask">Ok</b-btn>
-    </b-card>
+      <button variant="info" @click="cancelTask">Ok</button>
+    </div>
   </div>
 </template>
 
