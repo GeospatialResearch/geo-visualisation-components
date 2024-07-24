@@ -1,7 +1,8 @@
-import type { App } from "vue";
-
+import type {App} from "vue";
 // Import vue components
 import * as components from "@/components";
+
+export type {Bbox, MapViewerDataSourceOptions, Scenario} from './types'
 
 // install function executed by Vue.use()
 export default {

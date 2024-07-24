@@ -14,6 +14,7 @@ export default defineConfig({
     cssInjectedByJsPlugin(),
     dts({
       insertTypesEntry: true,
+      rollupTypes: true,
     }),
     sassDts(),
     cssInjectedByJsPlugin(),
@@ -50,7 +51,7 @@ export default defineConfig({
       // Could also be a dictionary or array of multiple entry points
       entry: "lib/components/index.ts",
       name: "geo-visualisation-components",
-      formats: ["es", "cjs", "umd"],
+      formats: ["es", "umd"],
       fileName: (format) => `geo-visualisation-components.${format}.js`,
     },
     rollupOptions: {
@@ -68,9 +69,4 @@ export default defineConfig({
       },
     },
   },
-  // resolve: {
-  //   alias: {
-  //     "@": path.resolve(__dirname, "lib"),
-  //   },
-  // },
 })
