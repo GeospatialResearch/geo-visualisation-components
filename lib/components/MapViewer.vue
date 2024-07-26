@@ -11,20 +11,24 @@
       <h3>{{ error }}</h3>
       <button type="button" class="btn btn-info" @click="cancelTask">Ok</button>
     </div>
+    <div v-show="!loading">
+      <Plotly v-if="plotData" :data="plotData" />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import axios from "axios";
 import * as Cesium from "cesium";
-import type { PropType } from "vue";
-import { defineComponent } from "vue";
+import type {Data} from "plotly.js";
+import type {PropType} from "vue";
+import {defineComponent} from "vue";
 
 import "cesium/Source/Widgets/widgets.css";
 
-import type { MapViewerDataSourceOptions, Scenario } from "@/types";
+import type {MapViewerDataSourceOptions, Scenario} from "@/types";
 import LoadingSpinner from "./LoadingSpinner.vue";
-//todo reinstate Plotly
+import Plotly from ".//Plotly.vue";
 
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
@@ -40,6 +44,7 @@ export default defineComponent({
 
   components: {
     LoadingSpinner,
+    Plotly,
   },
 
   props: {
@@ -95,8 +100,9 @@ export default defineComponent({
       viewer: null as Cesium.Viewer | null,
       loading: false,
       handler: null as Cesium.ScreenSpaceEventHandler | null,
-      plotData: null as any, //todo
-      plotRenderEvt: () => {},
+      plotData: null as Data[] | null,
+      plotRenderEvt: () => {
+      },
       scratch: new Cesium.Cartesian2(),
       boxSelection: {
         selector: new Cesium.Entity(),
@@ -128,16 +134,16 @@ export default defineComponent({
     }
 
     const initPos = Cesium.Cartesian3.fromDegrees(
-      this.initLong,
-      this.initLat,
-      this.initHeight,
+        this.initLong,
+        this.initLat,
+        this.initHeight,
     );
-    this.viewer.camera.flyTo({ destination: initPos });
+    this.viewer.camera.flyTo({destination: initPos});
     this.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(
-      (e) => {
-        e.cancel = true;
-        this.viewer?.scene.camera.flyTo({ destination: initPos });
-      },
+        (e) => {
+          e.cancel = true;
+          this.viewer?.scene.camera.flyTo({destination: initPos});
+        },
     );
   },
 
@@ -160,7 +166,7 @@ export default defineComponent({
     async scenarios(scenarios: Scenario[]) {
       // add data sources for each scenario async and wait until all are complete.
       const addScenarioPromises = scenarios.map(
-        async (scenario) => await this.addDataSourcesProp(scenario),
+          async (scenario) => await this.addDataSourcesProp(scenario),
       );
       await Promise.all(addScenarioPromises);
     },
@@ -177,10 +183,10 @@ export default defineComponent({
   computed: {
     selectionBbox() {
       const firstPoint = Cesium.Rectangle.northwest(
-        this.boxSelection.rectangleSelector,
+          this.boxSelection.rectangleSelector,
       );
       const secondPoint = Cesium.Rectangle.southeast(
-        this.boxSelection.rectangleSelector,
+          this.boxSelection.rectangleSelector,
       );
       const bbox = {
         lat1: Cesium.Math.toDegrees(firstPoint.latitude),
@@ -209,74 +215,74 @@ export default defineComponent({
 
       //Draw the selector while the user drags the mouse while holding shift
       const drawSelector = (
-        movement: Cesium.ScreenSpaceEventHandler.MotionEvent,
+          movement: Cesium.ScreenSpaceEventHandler.MotionEvent,
       ) => {
         if (!this.boxSelection.mouseDown) {
           return;
         }
 
         const cartesian = this.viewer?.camera.pickEllipsoid(
-          movement.endPosition,
-          this.viewer.scene.globe.ellipsoid,
+            movement.endPosition,
+            this.viewer.scene.globe.ellipsoid,
         );
         if (cartesian) {
           //mouse cartographic
           const cartographic = Cesium.Cartographic.fromCartesian(
-            cartesian,
-            Cesium.Ellipsoid.WGS84,
+              cartesian,
+              Cesium.Ellipsoid.WGS84,
           );
 
           if (!this.boxSelection.firstPointSet) {
             this.boxSelection.firstPoint =
-              Cesium.Cartographic.clone(cartographic);
+                Cesium.Cartographic.clone(cartographic);
             this.boxSelection.firstPointSet = true;
           } else {
             this.boxSelection.rectangleSelector.east = Math.max(
-              cartographic.longitude,
-              this.boxSelection.firstPoint.longitude,
+                cartographic.longitude,
+                this.boxSelection.firstPoint.longitude,
             );
             this.boxSelection.rectangleSelector.west = Math.min(
-              cartographic.longitude,
-              this.boxSelection.firstPoint.longitude,
+                cartographic.longitude,
+                this.boxSelection.firstPoint.longitude,
             );
             this.boxSelection.rectangleSelector.north = Math.max(
-              cartographic.latitude,
-              this.boxSelection.firstPoint.latitude,
+                cartographic.latitude,
+                this.boxSelection.firstPoint.latitude,
             );
             this.boxSelection.rectangleSelector.south = Math.min(
-              cartographic.latitude,
-              this.boxSelection.firstPoint.latitude,
+                cartographic.latitude,
+                this.boxSelection.firstPoint.latitude,
             );
             this.boxSelection.selector.show = true;
           }
         }
       };
       this.handler.setInputAction(
-        drawSelector,
-        Cesium.ScreenSpaceEventType.MOUSE_MOVE,
-        Cesium.KeyboardEventModifier.SHIFT,
+          drawSelector,
+          Cesium.ScreenSpaceEventType.MOUSE_MOVE,
+          Cesium.KeyboardEventModifier.SHIFT,
       );
 
       const getSelectorLocation = new Cesium.CallbackProperty(
-        (_time, result) => {
-          return Cesium.Rectangle.clone(
-            this.boxSelection.rectangleSelector,
-            result,
-          );
-        },
-        false,
+          (_time, result) => {
+            return Cesium.Rectangle.clone(
+                this.boxSelection.rectangleSelector,
+                result,
+            );
+          },
+          false,
       );
 
       const startClickShift = () => {
         this.boxSelection.mouseDown = true;
         if (this.boxSelection.selector.rectangle)
           this.boxSelection.selector.rectangle.coordinates =
-            getSelectorLocation;
+              getSelectorLocation;
       };
       this.handler.setInputAction(
-        startClickShift,
-        Cesium.ScreenSpaceEventType.LEFT_DOWN,
-        Cesium.KeyboardEventModifier.SHIFT,
+          startClickShift,
+          Cesium.ScreenSpaceEventType.LEFT_DOWN,
+          Cesium.KeyboardEventModifier.SHIFT,
       );
 
       const endClickShift = () => {
@@ -284,13 +290,13 @@ export default defineComponent({
         this.boxSelection.firstPointSet = false;
         if (this.boxSelection.selector.rectangle)
           this.boxSelection.selector.rectangle.coordinates =
-            getSelectorLocation;
+              getSelectorLocation;
         this.requestFloodData();
       };
       this.handler.setInputAction(
-        endClickShift,
-        Cesium.ScreenSpaceEventType.LEFT_UP,
-        Cesium.KeyboardEventModifier.SHIFT,
+          endClickShift,
+          Cesium.ScreenSpaceEventType.LEFT_UP,
+          Cesium.KeyboardEventModifier.SHIFT,
       );
 
       this.boxSelection.selector = this.viewer?.entities.add({
@@ -302,23 +308,23 @@ export default defineComponent({
       }) as Cesium.Entity;
 
       this.handler.setInputAction(
-        (event: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
-          if (this.taskId == null) {
-            return;
-          }
-          const worldPosCartesian = this.viewer?.camera.pickEllipsoid(
-            event.position,
-          );
-          if (worldPosCartesian) {
-            const cartographic =
-              Cesium.Ellipsoid.WGS84.cartesianToCartographic(worldPosCartesian);
-            const lat = Cesium.Math.toDegrees(cartographic.latitude);
-            const lng = Cesium.Math.toDegrees(cartographic.longitude);
-            this.queryPoint(lat, lng);
-          }
-        },
-        Cesium.ScreenSpaceEventType.LEFT_CLICK,
-        Cesium.KeyboardEventModifier.CTRL,
+          (event: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
+            if (this.taskId == null) {
+              return;
+            }
+            const worldPosCartesian = this.viewer?.camera.pickEllipsoid(
+                event.position,
+            );
+            if (worldPosCartesian) {
+              const cartographic =
+                  Cesium.Ellipsoid.WGS84.cartesianToCartographic(worldPosCartesian);
+              const lat = Cesium.Math.toDegrees(cartographic.latitude);
+              const lng = Cesium.Math.toDegrees(cartographic.longitude);
+              this.queryPoint(lat, lng);
+            }
+          },
+          Cesium.ScreenSpaceEventType.LEFT_CLICK,
+          Cesium.KeyboardEventModifier.CTRL,
       );
     },
 
@@ -326,63 +332,63 @@ export default defineComponent({
       this.loading = true;
       const bbox = this.selectionBbox;
       axios
-        .post("http://localhost:5000/models/generate", {
-          bbox,
-          scenarioOptions: this.scenarioOptions,
-        })
-        .then((response) => {
-          this.taskId = response.data.taskId;
-          this.$emit("task-posted", { bbox, taskId: this.taskId });
-          if (this.taskId) this.pollForTaskCompletion(this.taskId);
-        })
-        .catch((err) => {
-          this.$emit("task-failed", err);
-          if (err.response == undefined) {
-            this.error = "Network error - Cannot reach backend.";
-          } else if (err.response.status == 503) {
-            this.error =
-              "Request to start task failed.\nCelery workers are not active.";
-          } else {
-            this.error = `Request to start task failed.\nError code ${err.response.status}.`;
-          }
-          this.loading = false;
-        });
+          .post("http://localhost:5000/models/generate", {
+            bbox,
+            scenarioOptions: this.scenarioOptions,
+          })
+          .then((response) => {
+            this.taskId = response.data.taskId;
+            this.$emit("task-posted", {bbox, taskId: this.taskId});
+            if (this.taskId) this.pollForTaskCompletion(this.taskId);
+          })
+          .catch((err) => {
+            this.$emit("task-failed", err);
+            if (err.response == undefined) {
+              this.error = "Network error - Cannot reach backend.";
+            } else if (err.response.status == 503) {
+              this.error =
+                  "Request to start task failed.\nCelery workers are not active.";
+            } else {
+              this.error = `Request to start task failed.\nError code ${err.response.status}.`;
+            }
+            this.loading = false;
+          });
     },
 
     pollForTaskCompletion(taskId: string) {
       if (this.loading) {
         axios
-          .get(`http://localhost:5000/tasks/${taskId}`)
-          .then(
-            (response: { data: { taskStatus: string; taskValue: number } }) => {
-              if (response.data.taskStatus == "SUCCESS") {
-                this.loading = false;
-                if (this.boxSelection.selector)
-                  this.boxSelection.selector.show = false;
-                const floodModelId = response.data.taskValue;
-                this.$emit("task-completed", {
-                  bbox: this.selectionBbox,
-                  taskId,
-                  floodModelId,
-                });
-              } else {
-                // Try again after a timeout if the task is not completed
-                setTimeout(this.pollForTaskCompletion, 3000, taskId);
-              }
-            },
-          )
-          .catch((err) => {
-            this.$emit("task-failed", err);
-            this.error = "Task failed in the backend.\nPlease try again.";
-            this.loading = false;
-          });
+            .get(`http://localhost:5000/tasks/${taskId}`)
+            .then(
+                (response: { data: { taskStatus: string; taskValue: number } }) => {
+                  if (response.data.taskStatus == "SUCCESS") {
+                    this.loading = false;
+                    if (this.boxSelection.selector)
+                      this.boxSelection.selector.show = false;
+                    const floodModelId = response.data.taskValue;
+                    this.$emit("task-completed", {
+                      bbox: this.selectionBbox,
+                      taskId,
+                      floodModelId,
+                    });
+                  } else {
+                    // Try again after a timeout if the task is not completed
+                    setTimeout(this.pollForTaskCompletion, 3000, taskId);
+                  }
+                },
+            )
+            .catch((err) => {
+              this.$emit("task-failed", err);
+              this.error = "Task failed in the backend.\nPlease try again.";
+              this.loading = false;
+            });
       }
     },
 
     async queryPoint(lat: number, lng: number) {
       const response = await axios.get(
-        `http://localhost:5000/tasks/${this.taskId}/model/depth`,
-        { params: { lat, lng } },
+          `http://localhost:5000/tasks/${this.taskId}/model/depth`,
+          {params: {lat, lng}},
       );
       this.plotData = [
         {
@@ -395,8 +401,8 @@ export default defineComponent({
       this.plotRenderEvt = () => {
         const position = Cesium.Cartesian3.fromDegrees(lng, lat);
         const canvasPosition = this.viewer?.scene.cartesianToCanvasCoordinates(
-          position,
-          this.scratch,
+            position,
+            this.scratch,
         );
         if (canvasPosition && Cesium.defined(canvasPosition)) {
           // console.log(this.$refs.depthPlot)
@@ -422,11 +428,11 @@ export default defineComponent({
       const mapContainer = this.$refs.mapContainer as HTMLDivElement;
       if (this.viewer != null) {
         this.viewer.scene.splitPosition =
-          (slider.offsetLeft ?? 0) / (mapContainer.offsetWidth ?? 1);
+            (slider.offsetLeft ?? 0) / (mapContainer.offsetWidth ?? 1);
       }
 
       const handler = new Cesium.ScreenSpaceEventHandler(
-        slider as unknown as HTMLCanvasElement,
+          slider as unknown as HTMLCanvasElement,
       );
       let moveActive = false;
 
@@ -437,8 +443,8 @@ export default defineComponent({
 
         const relativeOffset = movement.endPosition.x;
         const splitPosition =
-          ((slider.offsetLeft ?? 0) + relativeOffset) /
-          (mapContainer.offsetWidth ?? 1);
+            ((slider.offsetLeft ?? 0) + relativeOffset) /
+            (mapContainer.offsetWidth ?? 1);
         slider.style.left = `${100.0 * splitPosition}%`;
         if (this.viewer != null)
           this.viewer.scene.splitPosition = splitPosition;
@@ -463,18 +469,18 @@ export default defineComponent({
     },
 
     async addDataSourcesProp(
-      dataSource: MapViewerDataSourceOptions,
-      splitDirection?: Cesium.SplitDirection,
+        dataSource: MapViewerDataSourceOptions,
+        splitDirection?: Cesium.SplitDirection,
     ) {
       const ionAssetIds: number[] = dataSource?.ionAssetIds ?? [];
       const providersFromAssets: Cesium.ImageryProvider[] = await Promise.all(
-        ionAssetIds.map((assetId: number) =>
-          Cesium.IonImageryProvider.fromAssetId(assetId),
-        ),
+          ionAssetIds.map((assetId: number) =>
+              Cesium.IonImageryProvider.fromAssetId(assetId),
+          ),
       );
       // Combine providersFromAssets and imageryProviders, accounting for undefined options
       const combinedProviders = providersFromAssets.concat(
-        dataSource?.imageryProviders ?? [],
+          dataSource?.imageryProviders ?? [],
       );
 
       // Add data sources to viewer, accounting for undefined options

@@ -1,6 +1,6 @@
 {
   "name": "geo-visualisation-components",
-  "version": "0.2.0-alpha18",
+  "version": "0.2.0-alpha19",
   "license": "MIT",
   "description": "Geo-visualisation-components is a component library for geospatial visualisations. It is written in TypeScript using Vue 2.",
   "keywords": [
@@ -46,12 +46,14 @@
     "@popperjs/core": "^2.11.8",
     "axios": "^1.6.2",
     "bootstrap": "^5.3.3",
-    "cesium": "^1.112.0"
+    "cesium": "^1.112.0",
+    "plotly.js-basic-dist-min": "^2.34.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.5",
+    "@types/plotly.js": "^2.33.1",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-typescript": "^13.0.0",
