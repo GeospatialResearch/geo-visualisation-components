@@ -34,6 +34,9 @@
     "paths": {
       "@/*": [
         "./lib/*"
+      ],
+      "plotly.js-basic-dist-min": [
+        "node_modules/@types/plotly.js"
       ]
     }
   }
