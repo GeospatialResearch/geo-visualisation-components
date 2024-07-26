@@ -1,6 +1,6 @@
 {
   "name": "geo-visualisation-components",
-  "version": "0.2.0-alpha17",
+  "version": "0.2.0-alpha18",
   "license": "MIT",
   "description": "Geo-visualisation-components is a component library for geospatial visualisations. It is written in TypeScript using Vue 2.",
   "keywords": [
@@ -43,8 +43,9 @@
   },
   "types": "./dist/main.d.ts",
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "axios": "^1.6.2",
-    "bootstrap-vue": "^2.23.1",
+    "bootstrap": "^5.3.3",
     "cesium": "^1.112.0"
   },
   "devDependencies": {
