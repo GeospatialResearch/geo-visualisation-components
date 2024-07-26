@@ -1,9 +1,7 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
-import typescript2 from 'rollup-plugin-typescript2';
 import dts from "vite-plugin-dts";
 import {viteStaticCopy} from 'vite-plugin-static-copy'
-import sassDts from 'vite-plugin-sass-dts'
 import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 import path from "path";
 import {fileURLToPath} from "node:url";
@@ -11,12 +9,10 @@ import {fileURLToPath} from "node:url";
 export default defineConfig({
   plugins: [
     vue(),
-    cssInjectedByJsPlugin(),
     dts({
       insertTypesEntry: true,
       rollupTypes: true,
     }),
-    sassDts(),
     cssInjectedByJsPlugin(),
     viteStaticCopy({
       targets: [
@@ -26,19 +22,6 @@ export default defineConfig({
         {src: './node_modules/cesium/Build/Cesium/Workers', dest: './'},
       ]
     }),
-    typescript2({
-      check: false,
-      include: ["lib/components/**/*.vue"],
-      tsconfigOverride: {
-        compilerOptions: {
-          outDir: "dist",
-          sourceMap: true,
-          declaration: true,
-          declarationMap: true,
-        },
-      },
-      exclude: ["vite.config.ts"],
-    })
   ],
   resolve: {
     alias: {
