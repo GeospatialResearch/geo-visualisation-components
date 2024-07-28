@@ -31,15 +31,12 @@ export default defineConfig({
   build: {
     cssCodeSplit: true,
     lib: {
-      // Could also be a dictionary or array of multiple entry points
       entry: "lib/components/index.ts",
       name: "geo-visualisation-components",
       formats: ["es", "umd"],
       fileName: (format) => `geo-visualisation-components.${format}.js`,
     },
     rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      // into your library
       input: {
         main: path.resolve(__dirname, "lib/main.ts"),
       },

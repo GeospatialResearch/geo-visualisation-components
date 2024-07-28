@@ -49,8 +49,6 @@ export default defineComponent({
   },
   methods: {
     refreshPlot() {
-      console.log('refresh')
-      console.log(Plotly)
       Plotly.newPlot('plot', this.data, this.layout, this.config)
     }
   }
