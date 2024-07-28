@@ -146,7 +146,7 @@ export default defineComponent({
     );
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     // Free up WebGL resources, reducing memory leak when destroying and recreating components
     this.viewer?.dataSources.removeAll(true);
     this.viewer?.entities.removeAll();
