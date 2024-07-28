@@ -30,7 +30,8 @@
   },
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "lib"
   ],
   "main": "./dist/geo-visualisation-components.umd.js",
   "module": "./dist/geo-visualisation-components.es.js",
