@@ -10,8 +10,10 @@ import {defineComponent} from "vue";
 import Plotly from 'plotly.js-basic-dist-min'
 import type {Config, Data, Layout} from "plotly.js";
 
+export type {Config, Data, Layout};
+
 export default defineComponent({
-  name: "Plotly",
+  name: "PlotlyPlot",
 
   mounted() {
     this.refreshPlot();

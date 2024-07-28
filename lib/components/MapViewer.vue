@@ -12,7 +12,7 @@
       <button type="button" class="btn btn-info" @click="cancelTask">Ok</button>
     </div>
     <div v-show="!loading">
-      <Plotly v-if="plotData" :data="plotData" />
+      <PlotlyPlot v-if="plotData" :data="plotData" />
     </div>
   </div>
 </template>
@@ -20,15 +20,14 @@
 <script lang="ts">
 import axios from "axios";
 import * as Cesium from "cesium";
-import type {Data} from "plotly.js";
 import type {PropType} from "vue";
 import {defineComponent} from "vue";
-
 import "cesium/Source/Widgets/widgets.css";
 
+import type {Data} from "./PlotlyPlot.vue";
+import PlotlyPlot from "./PlotlyPlot.vue";
 import type {MapViewerDataSourceOptions, Scenario} from "@/types";
 import LoadingSpinner from "./LoadingSpinner.vue";
-import Plotly from ".//Plotly.vue";
 
 // Add CESIUM_BASE_URL to type declaration of Window, to allow modification of the global window variable
 declare global {
@@ -44,7 +43,7 @@ export default defineComponent({
 
   components: {
     LoadingSpinner,
-    Plotly,
+    PlotlyPlot,
   },
 
   props: {
