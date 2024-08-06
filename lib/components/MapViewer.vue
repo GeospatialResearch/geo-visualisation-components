@@ -331,7 +331,7 @@ export default defineComponent({
       this.loading = true;
       const bbox = this.selectionBbox;
       axios
-          .post("http://localhost:5000/models/generate", {
+          .post(`${window.location.protocol}//${window.location.hostname}:5000/models/generate`, {
             bbox,
             scenarioOptions: this.scenarioOptions,
           })
@@ -357,7 +357,7 @@ export default defineComponent({
     pollForTaskCompletion(taskId: string) {
       if (this.loading) {
         axios
-            .get(`http://localhost:5000/tasks/${taskId}`)
+            .get(`${window.location.protocol}//${window.location.hostname}:5000/tasks/${taskId}`)
             .then(
                 (response: { data: { taskStatus: string; taskValue: number } }) => {
                   if (response.data.taskStatus == "SUCCESS") {
@@ -386,7 +386,7 @@ export default defineComponent({
 
     async queryPoint(lat: number, lng: number) {
       const response = await axios.get(
-          `http://localhost:5000/tasks/${this.taskId}/model/depth`,
+          `${window.location.protocol}//${window.location.hostname}:5000/tasks/${this.taskId}/model/depth`,
           {params: {lat, lng}},
       );
       this.plotData = [
@@ -413,7 +413,7 @@ export default defineComponent({
     },
 
     cancelTask() {
-      axios.delete(`http://localhost:5000/tasks/${this.taskId}`).then(() => {
+      axios.delete(`${window.location.protocol}//${window.location.hostname}:5000/tasks/${this.taskId}`).then(() => {
         this.loading = false;
         this.boxSelection.selector.show = false;
         this.taskId = null;
