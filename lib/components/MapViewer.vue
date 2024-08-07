@@ -70,8 +70,10 @@ export default defineComponent({
       default: 2000,
     },
     initBaseLayer: {
-      type: Cesium.ImageryLayer,
-      default: undefined, // Use Cesium's default
+      type: Object as PropType<Cesium.ImageryLayer | undefined>,
+      default() {
+        return undefined; // Use Cesium's default
+      },
     },
     dataSources: {
       type: Object as PropType<MapViewerDataSourceOptions>,
@@ -148,6 +150,7 @@ export default defineComponent({
 
   beforeUnmount() {
     // Free up WebGL resources, reducing memory leak when destroying and recreating components
+    console.log("beforeUnmount")
     this.viewer?.dataSources.removeAll(true);
     this.viewer?.entities.removeAll();
     this.viewer?.destroy();
@@ -155,12 +158,9 @@ export default defineComponent({
 
   watch: {
     async dataSources(dataSources: MapViewerDataSourceOptions) {
+      console.log("watch datasources")
       this.removeDataSources();
       await this.addDataSourcesProp(dataSources);
-    },
-    async "dataSources.geoJsonDataSources"() {
-      this.viewer?.dataSources.removeAll(true);
-      await this.addDataSourcesProp(this.dataSources);
     },
     async scenarios(scenarios: Scenario[]) {
       // add data sources for each scenario async and wait until all are complete.
@@ -418,7 +418,7 @@ export default defineComponent({
         this.boxSelection.selector.show = false;
         this.taskId = null;
         this.error = null;
-        this.removeDataSources();
+        this.$emit("task-failed");
       });
     },
 
@@ -494,8 +494,11 @@ export default defineComponent({
     },
 
     removeDataSources() {
+      console.log("removeDataSources")
+      console.log(this?.viewer?.dataSources);
       this.viewer?.dataSources.removeAll(true);
       let i = 0;
+      console.log(this.viewer?.imageryLayers)
       let len = this.viewer?.imageryLayers.length ?? 0;
       while (i < len) {
         const layer = this.viewer?.imageryLayers.get(i)!;
