@@ -331,7 +331,7 @@ export default defineComponent({
       this.loading = true;
       const bbox = this.selectionBbox;
       axios
-          .post(`${window.location.protocol}//${window.location.hostname}:5000/models/generate`, {
+          .post(`${window.location.protocol}//${window.location.hostname}:5000/models/flood/generate`, {
             bbox,
             scenarioOptions: this.scenarioOptions,
           })
