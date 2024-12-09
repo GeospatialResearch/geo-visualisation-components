@@ -70,7 +70,7 @@ export default defineComponent({
       default: 2000,
     },
     initBaseLayer: {
-      type: Object as PropType<Cesium.ImageryLayer | undefined>,
+      type: Object as PropType<Cesium.ImageryProvider | undefined>,
       default() {
         return undefined; // Use Cesium's default
       },
@@ -122,8 +122,13 @@ export default defineComponent({
   },
 
   mounted() {
+    let baseLayer;
+    if (this.initBaseLayer != undefined) {
+      // Allow overriding undefined baseLayer if a provider is available
+      baseLayer = new Cesium.ImageryLayer(this.initBaseLayer, {saturation: 0}) ;
+    }
     this.viewer = new Cesium.Viewer("mapContainer", {
-      baseLayer: this.initBaseLayer,
+      baseLayer: baseLayer,
       animation: false,
       timeline: false,
       sceneModePicker: false,
@@ -495,7 +500,6 @@ export default defineComponent({
 
     removeDataSources() {
       console.log("removeDataSources")
-      console.log(this?.viewer?.dataSources);
       this.viewer?.dataSources.removeAll(true);
       let i = 0;
       console.log(this.viewer?.imageryLayers)
