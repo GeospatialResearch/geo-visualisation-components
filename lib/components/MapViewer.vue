@@ -500,7 +500,6 @@ export default defineComponent({
 
     removeDataSources() {
       console.log("removeDataSources")
-      console.log(this?.viewer?.dataSources);
       this.viewer?.dataSources.removeAll(true);
       let i = 0;
       console.log(this.viewer?.imageryLayers)
