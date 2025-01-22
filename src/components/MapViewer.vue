@@ -233,7 +233,7 @@ export default Vue.extend({
     async requestFloodData() {
       this.loading = true;
       const bbox = this.selectionBbox
-      axios.post("http://localhost:5000/models/generate", {
+      axios.post(`${window.location.protocol}//${window.location.hostname}:5000/models/generate`, {
         bbox,
         scenarioOptions: this.scenarioOptions
       }).then((response) => {
@@ -257,7 +257,7 @@ export default Vue.extend({
 
     pollForTaskCompletion(taskId: string) {
       if (this.loading) {
-        axios.get(`http://localhost:5000/tasks/${taskId}`)
+        axios.get(`${window.location.protocol}//${window.location.hostname}:5000/tasks/${taskId}`)
             .then((response: { data: { taskStatus: string; }; }) => {
               if (response.data.taskStatus == "SUCCESS") {
                 this.loading = false;
@@ -280,7 +280,7 @@ export default Vue.extend({
 
     async queryPoint(lat, lng) {
       const response = await axios.get(
-          `http://localhost:5000/tasks/${this.taskId}/model/depth`, {params: {lat, lng}});
+          `${window.location.protocol}//${window.location.hostname}:5000/tasks/${this.taskId}/model/depth`, {params: {lat, lng}});
       this.plotData = [{
         x: response.data.time,
         y: response.data.depth,
@@ -301,7 +301,7 @@ export default Vue.extend({
     },
 
     cancelTask() {
-      axios.delete(`http://localhost:5000/tasks/${this.taskId}`)
+      axios.delete(`${window.location.protocol}//${window.location.hostname}:5000/tasks/${this.taskId}`)
           .then(() => {
             this.loading = false;
             this.boxSelection.selector.show = false;
